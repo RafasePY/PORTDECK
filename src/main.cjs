@@ -1,5 +1,7 @@
 'use strict';
 const {app, BrowserWindow, dialog, ipcMain, nativeImage} = require('electron');
+// PULSE reproduz áudio local de inicialização antes da primeira interação.
+app.commandLine.appendSwitch('autoplay-policy','no-user-gesture-required');
 const {spawn} = require('node:child_process');
 const {readFileSync, existsSync, statSync} = require('node:fs');
 const path = require('node:path');

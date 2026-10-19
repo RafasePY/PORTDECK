@@ -11,3 +11,88 @@
 @media(max-width:900px){.app{padding:17px 22px 70px}.topbar{gap:22px}.version{display:none}.nav{gap:14px}.hero-info{width:75%}.hero{min-height:430px}.footer{left:22px;right:22px}.footer>div:last-child{display:none}}
 @media(max-width:600px){.controller-info{display:none}.brand{font-size:20px}.brand-mark{width:28px;height:28px}.nav-item{font-size:13px}.hero-info{width:94%;padding:28px}.hero h1{font-size:36px}.hero-actions{flex-wrap:wrap}.games-row{gap:12px}.section-heading h2{font-size:20px}.text-action{font-size:11px}.footer-hint{font-size:10px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.001ms!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}
+
+
+/* PULSE: linguagem visual PortDeck. Sem imagens nem sons proprietários. */
+:root{--accent:#5af2d0;--accent2:#a48cff;--pulse-ink:#070b19;--pulse-ease:cubic-bezier(.16,1,.3,1)}
+body{background:radial-gradient(ellipse at 68% -22%,#172449 0%,transparent 56%),linear-gradient(145deg,#080e20,#080b18 67%,#0e1027)}
+.ambient{background:radial-gradient(circle at 88% 21%,rgba(126,81,244,.20),transparent 36%),radial-gradient(circle at 12% 75%,rgba(37,210,185,.13),transparent 44%);animation:ambient-drift 24s ease-in-out infinite alternate}
+.grain{opacity:.05;pointer-events:none}
+.app{padding-top:16px}
+.topbar{position:relative;z-index:4;height:75px}
+.brand{font-weight:950;letter-spacing:-1.4px}
+.brand-mark{position:relative;display:block;width:42px;height:42px;transform:none;margin-right:13px;overflow:visible;border:0;border-radius:13px;background:linear-gradient(140deg,#64ffe0,#6da6ff 54%,#ae80ff);box-shadow:0 0 0 1px #ffffff33,0 0 35px #5af2d049}
+.brand-mark:before{content:'';position:absolute;inset:7px;border-radius:8px;background:#091126;transform:rotate(18deg)}
+.brand-mark:after{content:'';position:absolute;inset:12px 11px 12px 15px;border:2px solid #75ffe4;border-left-color:transparent;border-radius:8px;transform:rotate(-19deg)}
+.brand-core{position:absolute;inset:17px;border-radius:40px;background:white;box-shadow:0 0 12px white}
+.version{color:#dcd2ff;border-color:#9770ff71;background:#9470ff24}
+.nav-item{font-size:14px;transition:color .18s}
+.nav-item:hover{color:white}
+.nav-item.active:after{background:linear-gradient(90deg,#52f5cb,#a48cff);height:2px;box-shadow:0 0 18px #78ffdb}
+.top-right .icon-button{background:rgba(255,255,255,.055)}
+.sound-toggle{font-size:21px}
+.sound-toggle.muted{opacity:.44}
+.hero{min-height:clamp(410px,55vh,680px);margin-top:16px;border:1px solid #ffffff25;border-radius:26px;background:linear-gradient(132deg,#161b42,#060a16 80%);box-shadow:0 28px 100px #0008,0 0 80px rgba(72,182,246,.045)}
+.hero:before{content:'';position:absolute;z-index:0;inset:-45%;background:conic-gradient(from 0deg at 65% 52%,transparent 0%,#9a80f71f 7%,transparent 22%,#37e8cc13 44%,transparent 64%);animation:hero-spin 24s linear infinite;pointer-events:none}
+.hero-backdrop{filter:saturate(.9);opacity:.8;transform:scale(1.035);background-position:center;background-size:cover;animation:hero-breathe 13s ease-in-out infinite alternate}
+.hero-veil{background:linear-gradient(90deg,#090e20 3%,#090e20ed 29%,#090e2070 68%,#090e2060),linear-gradient(0deg,#080c1ed9,transparent 46%)}
+.pulse-orbit{position:absolute;right:0;top:0;width:42vw;height:42vw;max-width:650px;max-height:650px;pointer-events:none;border-radius:50%;border:1px solid rgba(155,162,255,.17);box-shadow:0 0 0 31px rgba(105,123,226,.024),inset 0 0 75px rgba(92,70,178,.045);transform:translate(22%,-19%) rotateX(38deg);z-index:0;animation:orbit-pulse 10s ease-in-out infinite alternate}
+.orbit-two{width:29vw;height:29vw;max-width:490px;max-height:490px;right:4%;top:13%;border-color:#5cf7d82b;animation-delay:-4s;animation-duration:13s}
+.pulse-stars{position:absolute;inset:0;pointer-events:none;z-index:0;background-image:radial-gradient(circle,#c7ddffbb .9px,transparent 1px),radial-gradient(circle,#95b5ff88 .6px,transparent 1px);background-position:8px 21px,48px 85px;background-size:140px 160px,203px 153px;opacity:.22;mask-image:linear-gradient(90deg,transparent 30%,#000 100%)}
+.hero-info{width:min(66%,810px);padding-top:clamp(52px,5vw,100px)}
+.hero h1{font-size:clamp(48px,5.5vw,92px);letter-spacing:-3.6px;line-height:1.01;text-shadow:0 12px 45px #020817aa}
+.hero-description{font-size:16px}
+.hero-stats{margin-bottom:32px}
+.hero-index{letter-spacing:2.5px;font-size:25px}
+.eyebrow,.mini-label{color:#76ffe2}
+.hero .btn-primary{min-height:61px;padding:19px 32px;font-size:14px;box-shadow:0 18px 42px #49e1ba36}
+.btn-primary{background:linear-gradient(125deg,#62f4d2,#9df4ea);color:#07151c}
+.btn-primary:hover{background:linear-gradient(125deg,#a5ffe4,#c4fff6)}
+.btn:active,.game-card:active{transform:scale(.97)}
+.hero-info.pulse-enter{animation:hero-slide .5s var(--pulse-ease) both}
+.shelf{padding-top:28px}
+.shelf-frame{display:flex;align-items:center;gap:8px}
+.shelf-frame .games-row{flex:1;min-width:0;margin-right:0;scrollbar-width:none;mask-image:linear-gradient(90deg,#000 0%,#000 94%,transparent 100%)}
+.shelf-frame .games-row::-webkit-scrollbar{display:none}
+.shelf-arrow{z-index:2;flex:0 0 39px;height:110px;border-radius:15px;border:1px solid #ffffff20;background:#151d38a6;color:#d1fff6;font-size:42px;line-height:1;transition:background .2s,transform .2s}
+.shelf-arrow:hover,.shelf-arrow:focus-visible{background:#3d426c;transform:scale(1.04)}
+.game-card{background:linear-gradient(180deg,#1b2640,#131a32);border:1px solid #ffffff1a;transition:transform .34s var(--pulse-ease),box-shadow .3s,border-color .3s,filter .2s}
+.game-card.selected,.game-card:focus-visible{transform:translateY(-10px) scale(1.05);border-color:#71ffe2;box-shadow:0 0 0 2px #72ffdc45,0 15px 60px #3fd9ce31,0 25px 45px #0007}
+.game-card:hover{border-color:#b0aaff;box-shadow:0 15px 45px #aa75ff30}
+.poster{background:linear-gradient(132deg,#404477,#1b294a 48%,#0c1830)}
+.poster-monogram{background:linear-gradient(120deg,#d2fff4,#b1adff);background-clip:text;color:transparent}
+.poster-badge{border:1px solid #ffffff25;background:#0c1525d9}
+.game-card.selected .poster-badge{background:#54e8c3;color:#071723}
+.view:not([hidden]){animation:view-rise .45s var(--pulse-ease)}
+.modal-screen{z-index:30}
+.modal{background:linear-gradient(140deg,#18223d,#12172b);border:1px solid #baafff48;box-shadow:0 55px 130px #000c}
+.field-help{color:#87a7bb;font-weight:400;font-size:11px;line-height:1.6;display:block}
+.launch-settings{border:1px solid #76f8dd3c;background:#15362e73;border-radius:9px;color:#8affdd;padding:13px 16px;font-weight:800;font-size:11px;letter-spacing:.5px;text-align:left}
+.launch-settings:hover{background:#295e4f}
+.boot-screen{position:fixed;z-index:100;inset:0;display:grid;place-items:center;isolation:isolate;background:radial-gradient(ellipse at 50% 52%,#1b2546 0%,#080a1a 55%,#040611 100%);overflow:hidden;opacity:1;transition:opacity .75s ease,visibility .75s}
+.boot-screen.dismissed{opacity:0;visibility:hidden;pointer-events:none}
+.boot-aura{position:absolute;width:min(75vw,850px);aspect-ratio:1;border-radius:50%;background:conic-gradient(from 45deg,#43f7d60e,#b18dff83,#67a6ff12,#43f7d676,#43f7d60e);filter:blur(80px);animation:boot-glow 4s ease-in-out infinite alternate;opacity:.56}
+.boot-brand{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;transform:translateY(-13px)}
+.boot-glyph{width:123px;height:123px;border-radius:35px;display:grid;place-items:center;background:linear-gradient(145deg,#6effd9,#8c9aff,#b48fff);box-shadow:0 0 50px #68efd14a,0 0 160px #9275ff34;animation:boot-portal 1.5s var(--pulse-ease) both}
+.boot-glyph:before{content:'';position:absolute;width:79px;height:79px;border-radius:24px;background:#0b1328;transform:rotate(18deg)}
+.boot-glyph:after{content:'';position:absolute;width:39px;height:39px;border:4px solid #6afddd;border-left-color:transparent;border-radius:13px;transform:rotate(-18deg);box-shadow:0 0 19px #56ffe4b2}
+.boot-glyph span{position:relative;width:8px;height:8px;background:#fff;border-radius:50%;box-shadow:0 0 20px white;z-index:1}
+.boot-wordmark{font-size:clamp(32px,5vw,66px);font-weight:950;letter-spacing:-3px;margin-top:35px;animation:boot-title 1s .18s both}
+.boot-wordmark span{font-weight:320;color:#c7d5e7}
+.boot-caption{font-size:11px;font-weight:850;letter-spacing:4px;color:#8baebf;margin-top:9px;animation:boot-title 1s .28s both}
+.boot-loader{margin-top:48px;width:160px;height:3px;background:#ffffff24;border-radius:6px;overflow:hidden}
+.boot-loader i{display:block;height:100%;width:100%;transform:translateX(-102%);background:linear-gradient(90deg,#56ffe0,#9c85ff);box-shadow:0 0 16px #77ebeb;animation:boot-load 2.15s cubic-bezier(.15,.72,.22,1) forwards}
+.boot-skip{position:absolute;bottom:42px;font-size:10px;font-weight:800;letter-spacing:2px;color:#8396ad;animation:boot-title 1s 1s both}
+@keyframes boot-portal{0%{opacity:0;transform:scale(.5) rotate(-120deg);filter:blur(16px)}65%{opacity:1;filter:blur(0)}100%{transform:scale(1) rotate(0)}}
+@keyframes boot-title{from{opacity:0;transform:translateY(13px)}to{opacity:1;transform:translateY(0)}}
+@keyframes boot-load{0%{transform:translateX(-101%)}100%{transform:translateX(0)}}
+@keyframes boot-glow{from{transform:scale(.78) rotate(0)}to{transform:scale(1.1) rotate(18deg)}}
+@keyframes hero-slide{from{opacity:.25;transform:translate3d(-22px,14px,0)}to{opacity:1;transform:none}}
+@keyframes view-rise{from{opacity:.25;transform:translateY(13px)}to{opacity:1;transform:none}}
+@keyframes ambient-drift{to{transform:translate(-3%,4%) scale(1.12)}}
+@keyframes orbit-pulse{to{opacity:.35;transform:translate(20%,-17%) rotateX(38deg) rotate(35deg) scale(1.08)}}
+@keyframes hero-spin{to{transform:rotate(360deg)}}
+@keyframes hero-breathe{to{transform:scale(1.12) translateX(-1.5%)}}
+@media(max-width:900px){.shelf-arrow{display:none}.hero-info{width:79%}.hero h1{font-size:clamp(37px,6.6vw,59px)}}
+@media(max-width:620px){.hero-info{width:100%}.hero h1{letter-spacing:-2px}.boot-caption{letter-spacing:2px}.topbar{gap:12px}.sound-toggle{display:none}}
+@media(prefers-reduced-motion:reduce){.boot-screen,.boot-loader i,.boot-glyph,.boot-wordmark,.boot-caption,.boot-skip{animation:none!important;transition:none!important}.hero:before,.hero-backdrop,.ambient,.pulse-orbit{animation:none!important}}
