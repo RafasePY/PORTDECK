@@ -3,6 +3,8 @@ import{createRoot}from'react-dom/client';
 import{AnimatePresence,motion,useReducedMotion}from'motion/react';
 import './style.css';
 import ConsoleHome from './components/ConsoleHome.jsx';
+import GameContextMenu from './components/GameContextMenu.jsx';
+import CloseGameOverlay from './components/CloseGameOverlay.jsx';
 
 const api=window.portdeck;
 const $time=s=>{const n=Math.max(0,Number(s)||0),h=Math.floor(n/3600),m=Math.floor((n%3600)/60);return h? h+'h '+String(m).padStart(2,'0')+'min':m+'min';};
@@ -103,9 +105,11 @@ function EditModal({game,art,onClose,onSave,onDelete,onLaunch,onBrowse,onImage})
   </motion.div>;
 }
 function App(){
-  const reduced=useReducedMotion(),[focusZone,setFocusZone]=useState('games'),[actionIndex,setActionIndex]=useState(0),[clock,setClock]=useState(new Date()),[games,setGames]=useState([]),[selected,setSelected]=useState(''),[view,setView]=useState('home'),[editing,setEditing]=useState(null),[running,setRunning]=useState([]),[art,setArt]=useState({}),[muted,setMuted]=useState(!defaultSound()),[intro,setIntro]=useState(true),[query,setQuery]=useState(''),[toast,setToast]=useState(''),[pad,setPad]=useState('');
+  const reduced=useReducedMotion(),[menu,setMenu]=useState(null),[closing,setClosing]=useState(null),[focusZone,setFocusZone]=useState('games'),[actionIndex,setActionIndex]=useState(0),[clock,setClock]=useState(new Date()),[games,setGames]=useState([]),[selected,setSelected]=useState(''),[view,setView]=useState('home'),[editing,setEditing]=useState(null),[running,setRunning]=useState([]),[art,setArt]=useState({}),[muted,setMuted]=useState(!defaultSound()),[intro,setIntro]=useState(true),[query,setQuery]=useState(''),[toast,setToast]=useState(''),[pad,setPad]=useState('');
   const gamesRef=useRef(games),stateRef=useRef({}),assetRequests=useRef(new Map()),lastPad=useRef(''),lastPadAt=useRef(0),toastTimeout=useRef(null),selectArea=useRef(null);
   const game=games.find(g=>g.id===selected)||games[0],focusedId=game?.id;
+  const contextGame=games.find(g=>g.id===menu?.id);
+  const closingGame=games.find(g=>g.id===closing?.id);
   const currentArt=game&&(art[game.banner]||art[game.cover]);
   const titleArt=game&&art[game.logo];
   const enabled=!muted;
@@ -143,6 +147,38 @@ function App(){
   const play=useCallback(async(id)=>{const target=id||stateRef.current.selected;if(!target)return;sound('select',stateRef.current.enabled);try{if(!api)return announce('Prévia: execução disponível no PortDeck instalado.');await api.play(target);const found=gamesRef.current.find(g=>g.id===target);announce('Iniciando '+(found?.name||'jogo')+'...');}catch(e){fail(e);}},[announce,fail]);
   const add=useCallback(async()=>{if(!api)return announce('Execute o PortDeck para adicionar jogos.');try{const g=await api.add();if(g){await reload();setSelected(g.id);setEditing(g);}}catch(e){fail(e);}},[announce,reload,fail]);
   const openEditor=useCallback(id=>{const target=gamesRef.current.find(g=>g.id===id);if(target){setEditing(target);sound('select',stateRef.current.enabled);}},[]);
+  const openMenu=useCallback((id,x,y)=>{
+    if(!gamesRef.current.some(g=>g.id===id))return;
+    setSelected(id);setFocusZone('games');setMenu({id,x,y});
+    sound('select',stateRef.current.enabled);
+  },[]);
+  const closeMenu=useCallback(()=>setMenu(null),[]);
+  const openFolder=useCallback(async id=>{
+    try{await api?.openFolder(id);}
+    catch(e){fail(e);}
+  },[fail]);
+  const openLauncher=useCallback(async id=>{
+    try{if(!api)throw new Error('Abra esta função no PortDeck instalado.');await api.configure(id);announce('Abrindo launcher original...');}
+    catch(e){fail(e);}
+  },[fail,announce]);
+  const beginClose=useCallback(id=>{setMenu(null);setClosing({id,phase:'confirm'});},[]);
+  const requestClose=useCallback(async(force=false)=>{
+    const c=stateRef.current.closing;
+    if(!c)return;
+    const id=c.id;
+    setClosing({id,phase:'closing'});
+    try{if(!api?.stop)throw new Error('O encerramento não está disponível nesta compilação.');await api.stop(id,force);}
+    catch(e){setClosing({id,phase:'force'});fail(e);}
+  },[fail]);
+  useEffect(()=>{
+    if(!closing||closing.phase!=='closing')return;
+    if(!running.includes(closing.id)){
+      const t=setTimeout(()=>{setClosing(current=>current?.id===closing.id?null:current);announce('Jogo encerrado.');},550);
+      return()=>clearTimeout(t);
+    }
+    const timer=setTimeout(()=>setClosing(current=>current?.id===closing.id&&current.phase==='closing'?{...current,phase:'force'}:current),6500);
+    return()=>clearTimeout(timer);
+  },[closing,running,announce]);
   const activate=useCallback(()=>{
     const s=stateRef.current;
     if(s.view==='library'){setView('detail');return;}
@@ -152,7 +188,7 @@ function App(){
     else if(s.actionIndex===1)s.openEditor(s.selected);
     else document.querySelector('.console-actions .console-btn:nth-child(3)')?.click();
   },[]);
-  stateRef.current={selected:focusedId,enabled,view,editing,play,jump,openEditor,muted,intro,focusZone,actionIndex,activate};
+  stateRef.current={selected:focusedId,enabled,view,editing,play,jump,openEditor,openMenu,muted,intro,menu,closing,focusZone,actionIndex,activate};
   useEffect(()=>{if(!intro)return;const t=setTimeout(()=>{setIntro(false);sound('start',enabled);},reduced?200:1850);return()=>clearTimeout(t);},[intro,reduced,enabled]);
   useEffect(()=>{const el=document.querySelector('[data-selected="true"]');if(el)el.scrollIntoView({behavior:reduced?'instant':'smooth',inline:'center',block:'nearest'});},[focusedId,view,reduced]);
   useEffect(()=>{
@@ -160,6 +196,25 @@ function App(){
       const st=stateRef.current;
       if(st.intro){if(['Enter',' ','Home'].includes(e.key)){e.preventDefault();setIntro(false);}return;}
       if(e.key==='F11'){e.preventDefault();api?.toggleFullscreen();return;}
+      if(st.closing){if(e.key==='Escape'&&st.closing.phase!=='closing'){e.preventDefault();setClosing(null);}return;}
+      if(st.menu){
+        if(e.key==='Escape'){e.preventDefault();closeMenu();return;}
+        if(['ArrowDown','ArrowUp'].includes(e.key)){
+          e.preventDefault();
+          const buttons=[...document.querySelectorAll('.game-context-menu [role="menuitem"]')];
+          const i=buttons.indexOf(document.activeElement);
+          buttons[(i+(e.key==='ArrowDown'?1:-1)+buttons.length)%buttons.length]?.focus();
+        }else if(e.key==='Enter'){
+          e.preventDefault();
+          (document.activeElement?.matches?.('.game-context-menu [role="menuitem"]')?document.activeElement:document.querySelector('.game-context-menu [role="menuitem"]'))?.click();
+        }
+        return;
+      }
+      if(e.key==='ContextMenu'||(e.shiftKey&&e.key==='F10')){
+        e.preventDefault();
+        if(st.selected){const tile=document.querySelector('.console-tile.active');const rect=tile?.getBoundingClientRect();st.openMenu(st.selected,rect?.left||180,(rect?.bottom||120)+8);}
+        return;
+      }
       if(st.editing){if(e.key==='Escape'){setEditing(null);sound('back',st.enabled);}return;}
       if(e.target?.closest?.('input,textarea,select,[role="menu"]'))return;
       if(e.key==='ArrowDown'&&st.view==='home'){e.preventDefault();setFocusZone('actions');setActionIndex(0);sound('move',st.enabled);}
@@ -180,13 +235,13 @@ function App(){
     return()=>window.removeEventListener('keydown',listener);
   },[]);
   useEffect(()=>{
-    if(intro||editing||view!=='home')return;
+    if(intro||editing||menu||closing||view!=='home')return;
     const selector=focusZone==='games'?'.console-tile.active':'.console-actions .console-btn:nth-child('+(actionIndex+1)+')';
     const button=document.querySelector(selector);
     if(button&&button!==document.activeElement)button.focus({preventScroll:true});
-  },[intro,editing,view,focusZone,actionIndex,focusedId]);
+  },[intro,editing,menu,closing,view,focusZone,actionIndex,focusedId]);
   useEffect(()=>{
-    let frame,prior='',stamp=0,heldHome=false;
+    let frame,prior='',stamp=0;
     const poll=()=>{
       const st=stateRef.current;
       const pads=navigator.getGamepads?.()||[];
@@ -200,12 +255,30 @@ function App(){
           if(down(16)||down(0)||down(9)){setIntro(false);prior='';}
         }else{
           const axes=pad.axes||[],h=axes[0]||0,v=axes[1]||0;
-          const cmd=down(16)?'home':down(12)||v<-.65?'up':down(13)||v>.65?'down':down(14)||h<-.65?'left':down(15)||h>.65?'right':down(0)?'accept':down(1)?'back':down(2)?'edit':down(3)?'options':down(4)?'areaLeft':down(5)?'areaRight':'';
+          const cmd=down(16)?'home':down(9)?'menu':down(12)||v<-.65?'up':down(13)||v>.65?'down':down(14)||h<-.65?'left':down(15)||h>.65?'right':down(0)?'accept':down(1)?'back':down(2)?'edit':down(3)?'options':down(4)?'areaLeft':down(5)?'areaRight':'';
           const now=performance.now(),canRepeat=['left','right','up','down'].includes(cmd);
           if(cmd&&(cmd!==prior||(canRepeat&&now-stamp>240))){
             stamp=now;
-            if(cmd==='home'){setView('home');setFocusZone('games');}
+            if(st.closing){
+              if(cmd==='back'&&st.closing.phase!=='closing')setClosing(null);
+              else if(cmd==='accept'&&st.closing.phase==='confirm')document.querySelector('.game-close-primary')?.click();
+              else if(cmd==='accept'&&st.closing.phase==='force')document.querySelector('.game-close-force')?.click();
+            }
+            else if(st.menu){
+              if(cmd==='back'||cmd==='menu')setMenu(null);
+              else if(cmd==='down'||cmd==='up'){
+                const buttons=[...document.querySelectorAll('.game-context-menu [role="menuitem"]')];
+                const i=buttons.indexOf(document.activeElement);
+                buttons[(i+(cmd==='down'?1:-1)+buttons.length)%buttons.length]?.focus();
+              }
+              else if(cmd==='accept')document.activeElement?.matches?.('.game-context-menu [role="menuitem"]')&&document.activeElement.click();
+            }
+            else if(cmd==='home'){setView('home');setFocusZone('games');}
             else if(st.editing){if(cmd==='back')setEditing(null);}
+            else if(cmd==='menu'&&st.view==='home'&&st.selected){
+              const tile=document.querySelector('.console-tile.active');
+              const rect=tile?.getBoundingClientRect();st.openMenu(st.selected,rect?.left||180,(rect?.bottom||120)+8);
+            }
             else if(cmd==='back'){setView('home');setFocusZone('games');sound('back',st.enabled);}
             else if(cmd==='edit')st.openEditor(st.selected);
             else if(cmd==='options'&&st.view==='home'){setFocusZone('actions');setActionIndex(2);document.querySelector('.console-actions .console-btn:nth-child(3)')?.click();}
@@ -250,7 +323,7 @@ function App(){
       <main>
         <AnimatePresence mode="wait">
           {view==='home'&&<motion.div key="home" className="home-console-view" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} transition={{duration:reduced?.01:.22}}>
-            <ConsoleHome games={games} game={game} art={art} selected={focusedId} zone={focusZone} actionIndex={actionIndex} onZone={setFocusZone} onAction={setActionIndex} onSelect={choose} onPlay={()=>play(focusedId)} onConfigure={()=>openEditor(focusedId)} onDetails={()=>setView('detail')} onAdd={add}/>
+            <ConsoleHome games={games} game={game} art={art} selected={focusedId} zone={focusZone} actionIndex={actionIndex} onZone={setFocusZone} onAction={setActionIndex} onSelect={choose} onPlay={()=>play(focusedId)} onConfigure={()=>openEditor(focusedId)} onDetails={()=>setView('detail')} onAdd={add} onContext={openMenu} onMenu={openMenu}/>
           </motion.div>}
           {view==='detail'&&<motion.div key="detail" className="detail" initial={{opacity:0,x:70}} animate={{opacity:1,x:0}} exit={{opacity:0,x:-40}} transition={spring}>
             <button className="breadcrumb" onClick={()=>reveal('home')}><Icon name="back"/> Voltar à biblioteca</button>
@@ -271,6 +344,8 @@ function App(){
       </main>
       <footer className="statusbar"><div><span className="keycap">{pad?'A':'Enter'}</span> Selecionar <span className="keycap">{pad?'B':'Esc'}</span> Voltar <span className="keycap">{pad?'Y':'F2'}</span> Opções <span className="keycap">←</span><span className="keycap">→</span> Navegar</div><small>{games.length?String(games.length).padStart(2,'0')+' JOGO'+(games.length!==1?'S':''):'BIBLIOTECA VAZIA'} · PORTDECK PULSE</small></footer>
     </div>
+    <AnimatePresence>{menu&&contextGame&&<GameContextMenu key={menu.id} game={contextGame} position={menu} running={running.includes(menu.id)} onClose={closeMenu} onPlay={()=>play(menu.id)} onLauncher={()=>openLauncher(menu.id)} onEdit={()=>openEditor(menu.id)} onFolder={()=>openFolder(menu.id)} onStop={()=>beginClose(menu.id)} onDetails={()=>setView('detail')}/>}</AnimatePresence>
+    <AnimatePresence>{closing&&closingGame&&<CloseGameOverlay key={closing.id} game={closingGame} phase={closing.phase} onCancel={()=>setClosing(null)} onRequest={()=>requestClose(false)} onForce={()=>requestClose(true)}/>}</AnimatePresence>
     <AnimatePresence>{editing&&<EditModal key={editing.id} game={editing} art={art} onClose={()=>setEditing(null)} onSave={save} onDelete={remove} onLaunch={launch} onBrowse={()=>api?.chooseExecutable?.()} onImage={kind=>api?.importArt?.(editing.id,kind)}/>}</AnimatePresence>
     <AnimatePresence>{toast&&<motion.div className="toast" initial={{opacity:0,y:25}} animate={{opacity:1,y:0}} exit={{opacity:0,y:16}} role="status">{toast}</motion.div>}</AnimatePresence>
     <Boot leave={!intro} onSkip={()=>setIntro(false)} reduced={reduced}/>
