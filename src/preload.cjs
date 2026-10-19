@@ -12,6 +12,7 @@ contextBridge.exposeInMainWorld('portdeck',Object.freeze({
   suggestDirectExecutable:id=>ipcRenderer.invoke('games:suggestDirectExecutable',id),
   loadCover:path=>ipcRenderer.invoke('covers:load',path),
   toggleFullscreen:()=>ipcRenderer.invoke('window:toggleFullscreen'),
+  closeWindow:()=>ipcRenderer.invoke('window:close'),
   running:()=>ipcRenderer.invoke('games:runningList'),
   onLibrary:cb=>{const fn=(_,games)=>cb(games);ipcRenderer.on('library:changed',fn);return()=>ipcRenderer.removeListener('library:changed',fn);},
   onRunning:cb=>{const fn=(_,ids)=>cb(ids);ipcRenderer.on('games:running',fn);return()=>ipcRenderer.removeListener('games:running',fn);}

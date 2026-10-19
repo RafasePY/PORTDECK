@@ -16,14 +16,14 @@ const errorMessage = e => e && e.message ? e.message : String(e);
 function createWindow() {
   win = new BrowserWindow({
     width: 1440, height: 880, minWidth: 800, minHeight: 520,
-    backgroundColor: '#0a111e', autoHideMenuBar: true, fullscreen: true,
+    backgroundColor: '#070914', autoHideMenuBar: true, fullscreen: true, frame: false,
     title: 'PortDeck', show: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true, nodeIntegration: false, sandbox: true
     }
   });
-  win.loadFile(path.join(__dirname, 'renderer', 'index.html'));
+  win.loadFile(path.join(__dirname, '..', 'dist', 'index.html'));
   win.once('ready-to-show', () => win.show());
   win.on('closed', () => {win=null;});
 }
@@ -56,6 +56,7 @@ function registerHandlers() {
     const mime=ext==='.png'?'image/png':ext==='.webp'?'image/webp':'image/jpeg';
     return `data:${mime};base64,${readFileSync(cover).toString('base64')}`;
   });
+  ipcMain.handle('window:close', () => {win?.close(); return true;});
   ipcMain.handle('window:toggleFullscreen', () => {win.setFullScreen(!win.isFullScreen());return win.isFullScreen();});
   ipcMain.handle('games:runningList', () => [...running.keys()]);
   ipcMain.handle('games:play', (_event,id) => runGame(id,false));
