@@ -18,5 +18,6 @@ contextBridge.exposeInMainWorld('portdeck',Object.freeze({
   closeWindow:()=>ipcRenderer.invoke('window:close'),
   running:()=>ipcRenderer.invoke('games:runningList'),
   onLibrary:cb=>{const fn=(_,games)=>cb(games);ipcRenderer.on('library:changed',fn);return()=>ipcRenderer.removeListener('library:changed',fn);},
-  onRunning:cb=>{const fn=(_,ids)=>cb(ids);ipcRenderer.on('games:running',fn);return()=>ipcRenderer.removeListener('games:running',fn);}
+  onRunning:cb=>{const fn=(_,ids)=>cb(ids);ipcRenderer.on('games:running',fn);return()=>ipcRenderer.removeListener('games:running',fn);},
+  onHome:cb=>{const fn=()=>cb();ipcRenderer.on('input:home',fn);return()=>ipcRenderer.removeListener('input:home',fn);}
 }));

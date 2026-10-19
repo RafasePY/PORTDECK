@@ -109,6 +109,7 @@ function App(){
   const titleArt=game&&art[game.logo];
   const enabled=!muted;
   const controller=identifyController(pad);
+  useEffect(()=>{if(!api?.onHome)return;return api.onHome(()=>{setMenu(null);setEditing(null);setView('home');setFocusZone('games');announce('PortDeck · Início (Start + Select)');});},[]);
   const enterConsole=useCallback(()=>{if(!stateRef.current.introReady)return;setIntro(false);sound('select',stateRef.current.enabled);},[]);
   useEffect(()=>{const timer=setInterval(()=>setClock(new Date()),30000);return()=>clearInterval(timer);},[]);
   const announce=useCallback(message=>{setToast(message);clearTimeout(toastTimeout.current);toastTimeout.current=setTimeout(()=>setToast(''),4200);},[]);
