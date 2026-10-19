@@ -39,3 +39,93 @@ main{position:relative;min-height:0;flex:1;overflow:hidden}.home{height:100%;dis
 .art-preview.missing{border-style:dashed;border-color:#d4e4f53a;min-height:58px;height:70px;color:#90aaba}
 .art-preview.missing span{font-size:11px;font-weight:450;text-align:center;max-width:85%}
 .art-error{color:#ff9aa6!important;font-size:12px;font-weight:600!important;line-height:1.4}
+
+
+/* =========================================================
+   PortDeck Console UI 0.4 — horizontal-first. Design original.
+   ========================================================= */
+.home-console-view,.console-home{height:100%;min-height:0;width:100%}
+.console-home{display:flex;flex-direction:column;justify-content:flex-start;position:relative}
+.console-shelf{flex:none;position:relative;padding:19px 0 4px;height:clamp(152px,23vh,238px)}
+.console-shelf-scroll{display:flex;gap:13px;align-items:flex-start;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;padding:9px 4px 13px 9px;margin-left:-9px;scroll-behavior:smooth;scroll-snap-type:x proximity;height:100%;mask-image:linear-gradient(90deg,#000 96%,transparent 100%)}
+.console-shelf-scroll::-webkit-scrollbar{display:none}
+.console-tile{position:relative;flex:0 0 clamp(105px,8.3vw,155px);height:calc(100% - 14px);min-height:0;display:flex;flex-direction:column;gap:8px;text-align:center;border:0;background:transparent;padding:0;border-radius:12px;scroll-snap-align:center;z-index:1;transition:filter .17s}
+.console-tile .console-tile-art{position:relative;display:block;flex:1;min-height:0;overflow:hidden;border-radius:12px;border:1px solid #ffffff2b;background:#18233a;box-shadow:0 10px 28px #03051585;transition:border-color .22s,box-shadow .24s}
+.console-tile .console-tile-art img{width:100%;height:100%;object-fit:cover;display:block}
+.console-tile:hover .console-tile-art{border-color:#b3fff0a6}
+.console-tile.active{z-index:2}
+.console-tile.active .console-tile-art{border:2px solid #79ffe2;box-shadow:0 0 0 2px #52ffdf34,0 0 24px #80ffec69,0 16px 31px #000b}
+.console-tile:focus-visible{outline:0}
+.console-tile:focus-visible .console-tile-art{outline:3px solid white;outline-offset:3px}
+.console-tile-caption{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#e6eff5e8;font-size:11px;font-weight:760;text-shadow:0 2px 9px #000d}
+.console-tile:not(.active) .console-tile-caption{color:#cad3dcbb}
+.console-tile-fallback{position:relative;display:grid;place-items:center;width:100%;height:100%;background:radial-gradient(circle at 65% 18%,#596691,transparent 52%),linear-gradient(135deg,#26334d,#0d172a)}
+.console-tile-fallback:before{content:'';position:absolute;top:-35%;right:-58%;width:135%;aspect-ratio:1;border:1px solid #d7d7ff40;border-radius:50%;box-shadow:0 0 0 35px #86c4d00c}
+.console-tile-fallback strong{position:relative;font-size:43px;color:#d1ddfa9c;letter-spacing:-3px}
+.console-add{flex:0 0 clamp(105px,8.3vw,155px);height:calc(100% - 14px);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;background:#12223cc0;border:1px solid #d1f8ff38;border-radius:12px;color:#d1e6f0;font-weight:700}
+.console-add span{font-size:49px;line-height:1;font-weight:300}
+.console-add small{font-size:11px}
+.console-add:hover{border-color:#8ff9e7;background:#213c4c}
+.console-shelf-progress{position:absolute;right:0;bottom:1px;font-size:10px;font-weight:800;color:#acbaca;letter-spacing:1.5px;background:#0b122392;border-radius:5px;padding:3px 6px}
+.console-stage{flex:1;min-height:0;display:flex;align-items:center;position:relative;pointer-events:none}
+.console-story{width:min(680px,57vw);max-height:100%;pointer-events:auto;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;position:relative;padding:15px 0 26px}
+.console-eyebrow{display:flex;align-items:center;gap:11px;font-size:11px;color:#a0ffeb;font-weight:900;letter-spacing:2px;text-shadow:0 2px 12px #000}
+.console-led{width:9px;height:9px;border-radius:50%;background:#65ffe2;box-shadow:0 0 12px #78fff1}
+.console-story h1{font-size:clamp(42px,5.5vw,94px);line-height:.98;letter-spacing:-.05em;font-weight:920;margin:29px 0 19px;text-wrap:balance;text-shadow:0 9px 26px #000e}
+.console-game-logo{max-width:min(590px,54vw);max-height:clamp(94px,18vh,205px);width:auto;object-fit:contain;object-position:left center;display:block;margin:27px 0 22px;filter:drop-shadow(0 6px 19px #000c)}
+.console-description{color:#d9e2ed;font-size:clamp(15px,1.18vw,19px);line-height:1.52;margin:0 0 21px;max-width:560px;text-wrap:pretty;text-shadow:0 4px 10px #030615ec;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.console-metadata{display:flex;align-items:center;gap:23px;flex-wrap:wrap;margin:6px 0 29px;color:#d5e1e7;font-size:12px;font-weight:600;text-shadow:0 2px 9px #000}
+.console-metadata span+span{padding-left:19px;border-left:1px solid #cddce44c}
+.console-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;max-width:770px}
+.console-btn{padding:0 22px;display:inline-flex;align-items:center;justify-content:center;gap:13px;min-height:58px;border-radius:11px;font-weight:810;font-size:15px;white-space:nowrap;box-shadow:0 7px 15px #0003;transition:transform .2s,box-shadow .2s,background .2s,border-color .2s}
+.console-btn:hover{transform:translateY(-2px)}
+.console-btn.console-play{background:linear-gradient(120deg,#a1fff3,#59f2d8);color:#071923;border:1px solid #bafff9;min-width:222px;box-shadow:0 8px 45px #60fbd734}
+.console-btn.console-play:hover{box-shadow:0 12px 54px #76f9e16e}
+.console-btn.console-secondary{background:#182539a6;border:1px solid #ffffff59;color:#f0f6fa;min-width:156px;backdrop-filter:blur(8px)}
+.console-btn.console-secondary:hover{background:#26384ccc}
+.console-btn.console-focused{outline:3px solid #99f7eb;outline-offset:4px}
+.console-triangle{font-size:18px}
+.console-more{position:absolute;z-index:10;bottom:min(4vh,24px);left:0;transform:translateY(100%);padding:9px;display:flex;flex-direction:column;min-width:235px;background:#122135f2;backdrop-filter:blur(20px);box-shadow:0 20px 40px #000b;border:1px solid #cdf4ff57;border-radius:12px}
+.console-more button{text-align:left;border:0;border-radius:8px;padding:12px 13px;background:transparent;font-size:13px;color:#ebf8fa}
+.console-more button:hover,.console-more button:focus-visible{background:#64fee829;color:#fff}
+.console-hint{flex:none;font-size:10px;color:#bbcede94;text-shadow:0 2px 8px #000d;min-height:19px;max-width:720px;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}
+.console-user{display:flex;align-items:center;gap:9px;font-size:12px;color:#d3dce6;white-space:nowrap}
+.console-user-avatar{border-radius:50%;width:31px;height:31px;background:linear-gradient(135deg,#162643,#5ad5dd 65%,#a4a3ff);border:1px solid #70eee2;color:#05162c;display:grid;place-items:center;font-weight:900}
+.console-clock{font-size:13px;color:#eff8ff;min-width:49px;font-weight:720;font-variant-numeric:tabular-nums}
+.shell .vignette{background:linear-gradient(90deg,#040b1bf0 0%,#05101cca 24%,#08102476 49%,#08102408 82%),linear-gradient(0deg,#081021e8 0%,#09162545 31%,transparent 57%),linear-gradient(180deg,#030916b0 0%,transparent 24%)}
+.shell .wallpaper{inset:0;background-position:center center;filter:brightness(.85) saturate(1.06)}
+.statusbar{position:relative;z-index:3}
+@media (max-height:840px){
+ .console-shelf{height:clamp(131px,22vh,175px);padding-top:11px}
+ .console-story{padding:5px 0 10px}
+ .console-game-logo{max-height:125px;margin:16px 0 12px}
+ .console-story h1{font-size:clamp(39px,5vw,71px);margin:17px 0 12px}
+ .console-description{font-size:14px;margin-bottom:11px;max-width:500px}
+ .console-metadata{margin:2px 0 16px}
+ .console-btn{min-height:48px;font-size:13px;padding:0 15px}
+ .console-btn.console-play{min-width:168px}
+ .console-btn.console-secondary{min-width:136px}
+}
+@media(max-width:1150px){
+ .console-user{display:none}
+ .console-story{width:65vw}
+ .console-actions{gap:9px}
+ .console-btn.console-play{min-width:160px}
+ .console-btn.console-secondary{min-width:123px}
+ .console-shelf-scroll{gap:10px}
+}
+@media(max-width:760px){
+ .console-clock{display:none}
+ .console-shelf{height:143px}
+ .console-tile,.console-add{flex-basis:100px}
+ .console-story{width:93vw}
+ .console-story h1{font-size:45px}
+ .console-description{font-size:13px}
+ .console-game-logo{max-width:75vw;max-height:100px}
+ .console-btn{min-height:41px;font-size:12px}
+ .console-btn.console-play,.console-btn.console-secondary{min-width:0}
+ .console-hint{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+ .console-tile,.console-btn,.console-shelf-scroll{transition:none!important;scroll-behavior:auto!important}
+}
