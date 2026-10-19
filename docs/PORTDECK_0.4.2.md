@@ -20,8 +20,11 @@ Não há uma interrupção temporizada que automaticamente dispensa o “pressio
 - Conectou/desconectou: notificação com tipo detectado, quando o navegador informar.
 - 8BitDo, PlayStation, Xbox, Nintendo, XInput genérico ou controle desconhecido.
 - Por causa de modos XInput, certos 8BitDo se identificam apenas como XInput. Nesses casos, **não inventar o fabricante**.
-- **Start (9) + Select/Back (8)** juntos retornam à Home quando o PortDeck está **recebendo os eventos do controle**. Atalho prioritário em relação a Start sozinho (menu de opções).
-- O atalho não é global enquanto um jogo está em primeiro plano. Steam/Windows podem interceptar Home/Guide; o PortDeck não sobrescreve esses componentes nem instala driver.
+- **Start (9) + Select/Back (8)** juntos retornam à Home. A combinação tem prioridade em relação a Start sozinho (menu de opções).
+- Durante um jogo em foco, o executável auxiliar `PortDeckInputBridge.exe`, compilado no próprio GitHub Actions, monitora **XInput** em segundo plano sem DLL injection, driver, acesso de administrador ou interceptação de teclado. Ele sinaliza ao PortDeck para recuperar foco somente se um jogo iniciado pelo launcher estiver sob acompanhamento.
+- Este retorno global é **experimental e apenas para XInput**: inclui Xbox e 8BitDo em modo XInput, mas não garante funcionamento para DS4/DualSense em modo nativo, DInput ou jogos em fullscreen exclusivo. Alguns ports lançam subprocessos não rastreados; nesse caso o retorno automático pode não funcionar.
+- A Steam e os drivers ainda podem capturar o botão Home/Guide. O combo Start+Select evita depender exclusivamente dele; não modifica as configurações da Steam.
+- Se o componente nativo falhar, a interface continua abrindo jogos normalmente; o combo funciona apenas com o PortDeck em foco.
 - Fallback de teclado: Ctrl+Shift+H com foco no PortDeck.
 
 ## Design
