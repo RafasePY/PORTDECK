@@ -4,16 +4,15 @@ import {AnimatePresence,motion} from 'motion/react';
 const duration=s=>{const t=Math.max(0,Number(s)||0);const h=Math.floor(t/3600),m=Math.floor((t%3600)/60);return h? h+'h '+String(m).padStart(2,'0')+'min':m+'min';};
 const date=iso=>{if(!iso)return 'Ainda não jogado';const d=new Date(iso);return Number.isNaN(d.getTime())?'Ainda não jogado':d.toLocaleDateString('pt-BR');};
 const cardAnim={type:'spring',stiffness:360,damping:30};
-function GameTile({game,selected,src,onSelect}){
-  return <motion.button type="button" className={'console-tile'+(selected?' active':'')} aria-label={'Selecionar '+game.name} aria-pressed={selected} data-console-tile={game.id} onClick={()=>onSelect(game.id)}
+function GameTile({game,selected,src,onSelect,onContext}){
+  return <motion.button type="button" className={'console-tile'+(selected?' active':'')} aria-label={'Selecionar '+game.name} aria-pressed={selected} data-console-tile={game.id} onClick={()=>onSelect(game.id)} onContextMenu={e=>{e.preventDefault();onContext(game.id,e.clientX,e.clientY);}}
     whileHover={{scale:1.055,y:-4}} whileTap={{scale:.97}} transition={cardAnim}>
     <span className="console-tile-art">{src?<img src={src} alt="" draggable="false"/>:<span className="console-tile-fallback"><strong>{game.name.slice(0,2).toUpperCase()}</strong></span>}</span>
     <span className="console-tile-caption">{game.name}</span>
   </motion.button>;
 }
-export default function ConsoleHome({games,game,art,selected,onSelect,onPlay,onConfigure,onDetails,onAdd,zone='games',actionIndex=0,onZone,onAction}){
-  const [more,setMore]=useState(false),shelf=useRef(null);
-  useEffect(()=>{setMore(false);},[game?.id]);
+export default function ConsoleHome({games,game,art,selected,onSelect,onPlay,onConfigure,onDetails,onAdd,onContext,onMenu,zone='games',actionIndex=0,onZone,onAction}){
+  const shelf=useRef(null);
   useEffect(()=>{
     const item=shelf.current?.querySelector('[data-console-tile].active');
     item?.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'nearest',inline:'center'});
@@ -25,7 +24,7 @@ export default function ConsoleHome({games,game,art,selected,onSelect,onPlay,onC
   return <div className="console-home">
     <section className="console-shelf" aria-label="Jogos cadastrados">
       <div className="console-shelf-scroll" ref={shelf}>
-        {games.map(g=><GameTile key={g.id} game={g} selected={g.id===selected} src={g.cover&&art[g.cover]} onSelect={id=>{onZone('games');onSelect(id);}}/>)}
+        {games.map(g=><GameTile key={g.id} game={g} selected={g.id===selected} src={g.cover&&art[g.cover]} onSelect={id=>{onZone('games');onSelect(id);}} onContext={onContext}/>)}
         <button className="console-add" onClick={onAdd} title="Adicionar port"><span>+</span><small>Adicionar</small></button>
       </div>
       <div className="console-shelf-progress">{games.length?String(Math.max(1,games.findIndex(g=>g.id===selected)+1)).padStart(2,'0')+' / '+String(games.length).padStart(2,'0'):'BIBLIOTECA VAZIA'}</div>
@@ -43,15 +42,9 @@ export default function ConsoleHome({games,game,art,selected,onSelect,onPlay,onC
             </button>
             {game&&<>
               <button className={'console-btn console-secondary'+(zone==='actions'&&actionIndex===1?' console-focused':'')} onFocus={()=>{onZone('actions');onAction(1);}} onClick={()=>act(1,onConfigure)}>⚙ Configurar</button>
-              <button className={'console-btn console-secondary'+(zone==='actions'&&actionIndex===2?' console-focused':'')} onFocus={()=>{onZone('actions');onAction(2);}} onClick={()=>{onZone('actions');onAction(2);setMore(v=>!v);}}>••• Mais opções</button>
+              <button className={'console-btn console-secondary'+(zone==='actions'&&actionIndex===2?' console-focused':'')} onFocus={()=>{onZone('actions');onAction(2);}} onClick={e=>{onZone('actions');onAction(2);const r=e.currentTarget.getBoundingClientRect();onMenu(game.id,r.left,r.bottom+8);}}>••• Mais opções</button>
             </>}
           </div>
-          <AnimatePresence>{more&&game&&<motion.div className="console-more" role="menu" initial={{opacity:0,y:-10}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-8}}>
-            <button onClick={()=>{setMore(false);onDetails();}}>Ver detalhes</button>
-            <button onClick={()=>{setMore(false);onConfigure();}}>Editar perfil e artes</button>
-            <button onClick={()=>{setMore(false);onAdd();}}>Adicionar outro port</button>
-            <button onClick={()=>setMore(false)}>Fechar opções</button>
-          </motion.div>}</AnimatePresence>}
         </motion.div>
       </AnimatePresence>
     </div>
