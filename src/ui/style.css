@@ -129,3 +129,59 @@ main{position:relative;min-height:0;flex:1;overflow:hidden}.home{height:100%;dis
 @media(prefers-reduced-motion:reduce){
  .console-tile,.console-btn,.console-shelf-scroll{transition:none!important;scroll-behavior:auto!important}
 }
+
+
+/* v0.4.1 — faixa na altura console: referência de proporção das imagens enviadas */
+.header{height:clamp(62px,7vh,78px);border-bottom-color:#ffffff14}
+.console-shelf{height:clamp(124px,15.8vh,174px);padding-top:7px;padding-bottom:0}
+.console-shelf-scroll{gap:11px;padding-top:5px;padding-bottom:8px}
+.console-tile,.console-add{flex-basis:clamp(91px,7.3vw,132px);height:calc(100% - 9px)}
+.console-tile{gap:5px}
+.console-tile .console-tile-art{border-radius:9px}
+.console-tile-caption{font-size:10px}
+.console-add{border-radius:9px}
+.console-add span{font-size:37px}
+.console-shelf-progress{right:3px;bottom:3px;font-size:9px}
+.console-stage{align-items:center}
+.console-story{padding:4px 0 16px}
+.console-story h1{font-size:clamp(49px,5.1vw,88px)}
+.console-game-logo{max-height:clamp(90px,16vh,185px);margin-top:20px}
+.console-description{line-height:1.45}
+.game-menu-shade{position:fixed;inset:0;z-index:45;background:#01050e72;backdrop-filter:blur(3px)}
+.game-context-menu{position:fixed;z-index:46;width:min(320px,92vw);max-height:calc(100vh - 90px);overflow-y:auto;display:flex;flex-direction:column;padding:6px;background:#181b23f5;border:1px solid #d6e4ee4b;border-radius:4px;box-shadow:0 26px 65px #000d;color:#e8eff8}
+.game-menu-title{padding:12px 14px 11px;font-size:13px;font-weight:800;border-bottom:1px solid #e6ecf41b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.game-menu-title small{display:block;font-weight:700;font-size:9px;color:#93b9cb;letter-spacing:1.4px;margin-top:5px}
+.game-context-menu [role="menuitem"]{width:100%;padding:11px 13px;min-height:50px;background:transparent;color:#e5eaf0;border:1px solid transparent;border-radius:3px;text-align:left;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:4px;font-size:13px;transition:background .15s}
+.game-context-menu [role="menuitem"] small{font-size:10px;color:#94a5b5}
+.game-context-menu [role="menuitem"]:hover,.game-context-menu [role="menuitem"]:focus{outline:0;background:#465263b5;border-color:#cbddeb66}
+.game-context-menu [role="menuitem"].game-menu-danger{color:#ffb0b8}
+.game-menu-foot{font-size:10px;color:#9ba9b6;padding:11px 12px 9px;border-top:1px solid #ffffff1d}
+.game-close-overlay{position:fixed;inset:0;z-index:55;display:flex;align-items:center;justify-content:center;background:linear-gradient(130deg,#161a29fa,#131521fa);color:#f5f7fa;isolation:isolate}
+.game-close-aura{position:absolute;z-index:-1;inset:0;pointer-events:none;background:radial-gradient(ellipse at 28% 22%,#756b7855,transparent 50%),radial-gradient(ellipse at 60% 70%,#71799322,transparent 48%);filter:blur(12px)}
+.game-close-content{width:min(600px,87vw);text-align:center;display:flex;flex-direction:column;align-items:center}
+.game-close-label{font-size:10px;letter-spacing:2.6px;font-weight:750;color:#b6c3d5}
+.game-close-spinner{margin:35px auto 16px;width:58px;height:58px;border:3px solid #9fbad12b;border-top-color:#e2f1fb;border-radius:50%}
+.game-close-spinner.is-spinning{animation:portdeck-closing-rotate 1s linear infinite}
+.game-close-content h2{font-size:clamp(24px,3.4vw,38px);font-weight:520;letter-spacing:-.7px;margin:8px 0 16px}
+.game-close-content p{font-size:14px;color:#bcc8d5;line-height:1.6;max-width:480px}
+.game-close-title{border-top:1px solid #e4eafb38;min-width:240px;max-width:100%;margin:23px auto 16px;padding:20px 10px;color:#e4ecf5;font-weight:600;font-size:15px}
+.game-close-buttons{display:flex;gap:10px;justify-content:center}
+.game-close-buttons button{background:#ffffff22;color:#f6f8fa;border:1px solid #ffffff4a;padding:12px 21px;border-radius:8px;font-size:13px;font-weight:700}
+.game-close-buttons .game-close-primary{background:#c2f6e9;color:#071b25}
+.game-close-buttons .game-close-force{background:#f29a9f;color:#3a0b10}
+.game-close-content small{margin:16px;color:#9dabba;font-size:11px}
+@keyframes portdeck-closing-rotate{to{transform:rotate(360deg)}}
+@media(max-height:800px){
+ .console-shelf{height:clamp(112px,16vh,142px)}
+ .console-tile,.console-add{flex-basis:clamp(90px,7.5vw,116px)}
+ .console-game-logo{max-height:105px;margin:12px 0 8px}
+ .console-story h1{font-size:clamp(38px,5vw,64px)}
+ .console-metadata{margin-bottom:15px}
+ .console-story{padding-bottom:4px}
+}
+@media(max-width:800px){
+ .console-shelf{height:122px}
+ .console-tile,.console-add{flex-basis:90px}
+ .game-context-menu{width:min(310px,92vw)}
+}
+@media(prefers-reduced-motion:reduce){.game-close-spinner.is-spinning{animation:none}}
