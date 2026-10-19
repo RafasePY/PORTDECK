@@ -65,11 +65,21 @@ function Cover({game,art,active,onClick,compact=false}){
     </div><div className="tile-meta"><strong>{game.name}</strong><small>{$time(seconds(game))}</small></div>
   </motion.button>;
 }
-const ImagePicker=({label,value,onChange,onSelect})=><label className="field"><span>{label}</span><div className="browse-line"><input value={value||''} onChange={e=>onChange(e.target.value)} placeholder="Selecione PNG, JPG ou WebP"/><button type="button" className="thin-btn" onClick={onSelect}>Procurar</button></div></label>;
-function EditModal({game,onClose,onSave,onDelete,onLaunch,onBrowse,onImage}){
+const ImagePicker=({label,value,onChange,onSelect,preview,error})=><label className="field"><span>{label}</span><div className="browse-line"><input value={value||''} onChange={e=>onChange(e.target.value)} placeholder="Selecione PNG, JPG ou WebP"/><button type="button" className="thin-btn" onClick={onSelect}>Procurar</button></div>{preview?<div className="art-preview"><img src={preview} alt={'Prévia de '+label}/><small>Imagem carregada</small></div>:<div className="art-preview missing"><span>{value?'A imagem não foi carregada. Importe novamente se necessário.':'Nenhuma imagem importada'}</span></div>}{error&&<small className="art-error">{error}</small>}</label>;
+function EditModal({game,art,onClose,onSave,onDelete,onLaunch,onBrowse,onImage}){
   const [form,setForm]=useState({...game});
+  const [localPreviews,setLocalPreviews]=useState({}),[imageErrors,setImageErrors]=useState({});
+  const pickArt=async kind=>{
+    try{
+      const asset=await onImage(kind);
+      if(!asset)return;
+      put(kind,asset.path);
+      setLocalPreviews(p=>({...p,[kind]:asset.preview}));
+      setImageErrors(p=>({...p,[kind]:''}));
+    }catch(e){setImageErrors(p=>({...p,[kind]:e?.message||String(e)}));}
+  };
   const put=(field,value)=>setForm(v=>({...v,[field]:value}));
-  useEffect(()=>{setForm({...game});},[game.id]);
+  useEffect(()=>{setForm({...game});setLocalPreviews({});setImageErrors({});},[game.id]);
   return <motion.div className="modal-shade" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} onMouseDown={e=>{if(e.target===e.currentTarget)onClose();}}>
     <motion.div className="editor" initial={{opacity:0,y:40,scale:.96}} animate={{opacity:1,y:0,scale:1}} exit={{opacity:0,y:20,scale:.97}} transition={{type:'spring',damping:26,stiffness:270}} role="dialog" aria-modal="true" aria-label="Configurar jogo">
       <header className="editor-head"><div><small>PERFIL DO JOGO</small><h2>{game.name}</h2></div><button className="ghost-icon" onClick={onClose} aria-label="Fechar"><Icon name="x"/></button></header>
@@ -81,7 +91,11 @@ function EditModal({game,onClose,onSave,onDelete,onLaunch,onBrowse,onImage}){
         <div className="two-fields"><label className="field"><span>Parâmetros de execução</span><input value={form.args||''} onChange={e=>put('args',e.target.value)}/></label><label className="field"><span>FPS de referência</span><input value={form.fps||''} onChange={e=>put('fps',e.target.value)} placeholder="Informativo"/></label></div>
         <label className="field"><span>Diretório de trabalho</span><input value={form.cwd||''} onChange={e=>put('cwd',e.target.value)}/></label>
         <label className="field"><span>Executável de configuração (opcional)</span><input value={form.config||''} onChange={e=>put('config',e.target.value)}/></label>
-        <div className="art-fields"><ImagePicker label="Capa vertical" value={form.cover} onChange={v=>put('cover',v)} onSelect={async()=>{const s=await onImage();if(s)put('cover',s);}}/><ImagePicker label="Banner de fundo (16:9)" value={form.banner} onChange={v=>put('banner',v)} onSelect={async()=>{const s=await onImage();if(s)put('banner',s);}}/><ImagePicker label="Logotipo transparente" value={form.logo} onChange={v=>put('logo',v)} onSelect={async()=>{const s=await onImage();if(s)put('logo',s);}}/></div>
+        <div className="art-fields">
+          <ImagePicker label="Capa vertical" value={form.cover} onChange={v=>put('cover',v)} onSelect={()=>pickArt('cover')} preview={localPreviews.cover||art[form.cover]} error={imageErrors.cover}/>
+          <ImagePicker label="Banner de fundo (16:9)" value={form.banner} onChange={v=>put('banner',v)} onSelect={()=>pickArt('banner')} preview={localPreviews.banner||art[form.banner]} error={imageErrors.banner}/>
+          <ImagePicker label="Logotipo transparente" value={form.logo} onChange={v=>put('logo',v)} onSelect={()=>pickArt('logo')} preview={localPreviews.logo||art[form.logo]} error={imageErrors.logo}/>
+        </div>
         <footer className="editor-actions"><button type="button" className="delete" onClick={onDelete}>Remover da biblioteca</button><div><button type="button" className="thin-btn" onClick={onClose}>Cancelar</button><button className="action-primary" type="submit">Salvar perfil</button></div></footer>
       </form>
     </motion.div>
@@ -89,7 +103,7 @@ function EditModal({game,onClose,onSave,onDelete,onLaunch,onBrowse,onImage}){
 }
 function App(){
   const reduced=useReducedMotion(),[games,setGames]=useState([]),[selected,setSelected]=useState(''),[view,setView]=useState('home'),[editing,setEditing]=useState(null),[running,setRunning]=useState([]),[art,setArt]=useState({}),[muted,setMuted]=useState(!defaultSound()),[intro,setIntro]=useState(true),[query,setQuery]=useState(''),[toast,setToast]=useState(''),[pad,setPad]=useState('');
-  const gamesRef=useRef(games),stateRef=useRef({}),seen=useRef(new Set()),lastPad=useRef(''),lastPadAt=useRef(0),toastTimeout=useRef(null),selectArea=useRef(null);
+  const gamesRef=useRef(games),stateRef=useRef({}),assetRequests=useRef(new Map()),lastPad=useRef(''),lastPadAt=useRef(0),toastTimeout=useRef(null),selectArea=useRef(null);
   const game=games.find(g=>g.id===selected)||games[0],focusedId=game?.id;
   const currentArt=game&&(art[game.banner]||art[game.cover]);
   const titleArt=game&&art[game.logo];
@@ -99,7 +113,29 @@ function App(){
   const reload=useCallback(async()=>{if(api)try{setGames(sortGames(await api.list()));}catch(e){fail(e);}},[fail]);
   useEffect(()=>{gamesRef.current=games;if(games.length&&!games.some(g=>g.id===selected))setSelected(games[0].id);},[games,selected]);
   useEffect(()=>{if(!api)return;reload();api.running().then(setRunning).catch(fail);const off=api.onLibrary(g=>setGames(sortGames(g)));const offRun=api.onRunning(ids=>setRunning(ids));return()=>{off();offRun();};},[reload,fail]);
-  useEffect(()=>{let alive=true;for(const g of games)for(const key of ['cover','banner','logo']){const file=g[key];if(!file||seen.current.has(file))continue;seen.current.add(file);api?.loadCover(file).then(src=>{if(src&&alive)setArt(old=>({...old,[file]:src}));}).catch(()=>{});}return()=>{alive=false;};},[games]);
+  useEffect(()=>{
+    // Reassocia cada efeito à promessa em voo: mudança na biblioteca não pode perder a arte.
+    if(!api)return;
+    let active=true;
+    for(const g of games)for(const kind of ['cover','banner','logo']){
+      const file=g[kind];
+      if(!file||art[file])continue;
+      let pending=assetRequests.current.get(file);
+      if(!pending){
+        pending=api.loadCover(file).then(src=>{
+          if(!src)throw new Error('Imagem indisponível');
+          return src;
+        }).catch(error=>{
+          assetRequests.current.delete(file);throw error;
+        });
+        assetRequests.current.set(file,pending);
+      }
+      pending.then(src=>{
+        if(active)setArt(old=>old[file]?old:{...old,[file]:src});
+      }).catch(()=>{/* A interface exibe orientação para importar novamente. */});
+    }
+    return()=>{active=false;};
+  },[games]);
   const choose=useCallback((id)=>{if(!id)return;setSelected(id);sound('move',enabled);},[enabled]);
   const jump=useCallback(delta=>{const all=gamesRef.current;const old=stateRef.current.selected;const n=all.findIndex(g=>g.id===old);if(all.length){const next=all[(Math.max(0,n)+delta+all.length)%all.length];setSelected(next.id);sound('move',stateRef.current.enabled);}},[]);
   const play=useCallback(async(id)=>{const target=id||stateRef.current.selected;if(!target)return;sound('select',stateRef.current.enabled);try{if(!api)return announce('Prévia: execução disponível no PortDeck instalado.');await api.play(target);const found=gamesRef.current.find(g=>g.id===target);announce('Iniciando '+(found?.name||'jogo')+'...');}catch(e){fail(e);}},[announce,fail]);
@@ -169,7 +205,7 @@ function App(){
       </main>
       <footer className="statusbar"><div><span className="keycap">{pad?'A':'Enter'}</span> Jogar <span className="keycap">{pad?'X':'F2'}</span> Configurar <span className="keycap">←</span><span className="keycap">→</span> Navegar</div><small>{games.length?String(games.length).padStart(2,'0')+' JOGO'+(games.length!==1?'S':''):'BIBLIOTECA VAZIA'} · PORTDECK PULSE</small></footer>
     </div>
-    <AnimatePresence>{editing&&<EditModal key={editing.id} game={editing} onClose={()=>setEditing(null)} onSave={save} onDelete={remove} onLaunch={launch} onBrowse={()=>api?.chooseExecutable?.()} onImage={()=>api?.chooseCover?.()}/>}</AnimatePresence>
+    <AnimatePresence>{editing&&<EditModal key={editing.id} game={editing} art={art} onClose={()=>setEditing(null)} onSave={save} onDelete={remove} onLaunch={launch} onBrowse={()=>api?.chooseExecutable?.()} onImage={kind=>api?.importArt?.(editing.id,kind)}/>}</AnimatePresence>
     <AnimatePresence>{toast&&<motion.div className="toast" initial={{opacity:0,y:25}} animate={{opacity:1,y:0}} exit={{opacity:0,y:16}} role="status">{toast}</motion.div>}</AnimatePresence>
     <Boot leave={!intro} onSkip={()=>setIntro(false)} reduced={reduced}/>
   </div>;
