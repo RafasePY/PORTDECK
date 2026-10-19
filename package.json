@@ -1,6 +1,6 @@
 {
   "name": "portdeck",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "PortDeck — biblioteca Big Picture para ports Windows",
   "main": "src/main.cjs",
   "author": "PortDeck contributors",

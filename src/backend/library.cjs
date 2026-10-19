@@ -34,12 +34,21 @@ function normalizeGame(g) {
     args: clean(g.args),
     cwd: clean(g.cwd || g.work),
     config: clean(g.config),
+    directExe: clean(g.directExe),
     cover: clean(g.cover),
     fps: clean(g.fps),
     playedSeconds: Math.max(0, Number(g.playedSeconds ?? g.played) || 0),
     lastPlayed: clean(g.lastPlayed),
     favorite: Boolean(g.favorite)
   };
+}
+
+function suggestDirectExe(exe) {
+  if (typeof exe !== 'string' || path.extname(exe).toLowerCase() !== '.exe') return '';
+  const base=path.basename(exe);
+  if (/^Play /i.test(base)) return '';
+  const candidate=path.join(path.dirname(exe),'Play '+base);
+  return fs.existsSync(candidate) && fs.statSync(candidate).isFile() ? candidate : '';
 }
 
 function importLegacyTSV(text) {
@@ -75,17 +84,18 @@ class Library {
     if (this.games.length >= MAX_GAMES) throw new Error('Biblioteca cheia.');
     if (!fs.existsSync(exe) || !fs.statSync(exe).isFile() || path.extname(exe).toLowerCase() !== '.exe') throw new Error('Selecione um arquivo .exe válido.');
     const name = path.parse(exe).name.replace(/[_-]/g, ' ');
-    const game = normalizeGame({name,exe,cwd:path.dirname(exe)});
+    const game = normalizeGame({name,exe,cwd:path.dirname(exe),directExe:suggestDirectExe(exe)});
     this.games.push(game); this.save(); return game;
   }
   update(game) {
     const index = this.games.findIndex(g => g.id === game.id);
     if (index < 0) throw new Error('Jogo não encontrado.');
     if (!game.exe || path.extname(game.exe).toLowerCase() !== '.exe' || !fs.existsSync(game.exe)) throw new Error('Caminho do executável inválido.');
+    if (game.directExe && (path.extname(game.directExe).toLowerCase() !== '.exe' || !fs.existsSync(game.directExe))) throw new Error('O executável direto precisa ser um .exe existente.');
     this.games[index] = normalizeGame({...this.games[index], ...game});
     this.save(); return this.games[index];
   }
   remove(id) {this.games = this.games.filter(g => g.id !== id); this.save();}
   find(id) {return this.games.find(g => g.id === id);}
 }
-module.exports = {Library, splitArgs, importLegacyTSV, normalizeGame};
+module.exports = {Library, splitArgs, importLegacyTSV, normalizeGame, suggestDirectExe};
