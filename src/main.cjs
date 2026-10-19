@@ -1,9 +1,9 @@
 'use strict';
-const {app, BrowserWindow, dialog, ipcMain, nativeImage} = require('electron');
+const {app, BrowserWindow, dialog, ipcMain, shell} = require('electron');
 // PULSE reproduz áudio local de inicialização antes da primeira interação.
 app.commandLine.appendSwitch('autoplay-policy','no-user-gesture-required');
 const {spawn} = require('node:child_process');
-const {readFileSync, existsSync, statSync} = require('node:fs');
+const {existsSync} = require('node:fs');
 const path = require('node:path');
 const {Library, splitArgs, suggestDirectExe} = require('./backend/library.cjs');
 const {AssetStore} = require('./backend/assets.cjs');
@@ -12,6 +12,7 @@ const running = new Map();
 const imageLimit = 12 * 1024 * 1024;
 const send = () => {if (win && !win.isDestroyed()) win.webContents.send('library:changed', db.list());};
 const sendRunning = () => {if (win && !win.isDestroyed()) win.webContents.send('games:running', [...running.keys()]);};
+// Apenas processos iniciados pelo PortDeck podem receber comandos de encerramento.
 const errorMessage = e => e && e.message ? e.message : String(e);
 
 function createWindow() {
@@ -70,6 +71,34 @@ function registerHandlers() {
   ipcMain.handle('games:runningList', () => [...running.keys()]);
   ipcMain.handle('games:play', (_event,id) => runGame(id,false));
   ipcMain.handle('games:configure', (_event,id) => runGame(id,true));
+  ipcMain.handle('games:openFolder', async (_event,id) => {
+    const g=db.find(id);
+    if(!g)throw new Error('Jogo não encontrado.');
+    const folder=path.dirname(g.exe);
+    if(!existsSync(folder))throw new Error('A pasta do jogo não foi encontrada.');
+    const result=await shell.openPath(folder);
+    if(result)throw new Error(result);
+    return {ok:true};
+  });
+  ipcMain.handle('games:stop', async (_event,id,force=false) => {
+    const proc=running.get(id);
+    if(!proc)throw new Error('Este jogo não está em execução pelo PortDeck.');
+    if(proc.child.exitCode!==null || !proc.child.pid)throw new Error('O processo do jogo já encerrou.');
+    const pid=proc.child.pid;
+    const command=process.platform==='win32'?'taskkill':null;
+    if(command){
+      const args=['/PID',String(pid)];
+      if(force)args.push('/F','/T');
+      await new Promise((resolve,reject)=>{
+        const killer=spawn(command,args,{windowsHide:true,shell:false,stdio:'ignore'});
+        killer.once('error',reject);
+        killer.once('close',code=>code===0?resolve():reject(new Error('O Windows não conseguiu encerrar o processo. Feche-o pelo próprio jogo.')));
+      });
+    }else{
+      proc.child.kill(force?'SIGKILL':'SIGTERM');
+    }
+    return {ok:true,pending:true};
+  });
 }
 
 function runGame(id, configure) {
