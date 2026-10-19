@@ -43,6 +43,14 @@ function normalizeGame(g) {
   };
 }
 
+function suggestDirectExe(exe) {
+  if (typeof exe !== 'string' || path.extname(exe).toLowerCase() !== '.exe') return '';
+  const base=path.basename(exe);
+  if (/^Play /i.test(base)) return '';
+  const candidate=path.join(path.dirname(exe),'Play '+base);
+  return fs.existsSync(candidate) && fs.statSync(candidate).isFile() ? candidate : '';
+}
+
 function importLegacyTSV(text) {
   return text.replace(/^\uFEFF/, '').split(/\r?\n/).filter(Boolean).slice(0, MAX_GAMES).map(line => {
     const [name, exe, args, cwd, config, cover, fps, played] = line.split('\t');
@@ -76,7 +84,7 @@ class Library {
     if (this.games.length >= MAX_GAMES) throw new Error('Biblioteca cheia.');
     if (!fs.existsSync(exe) || !fs.statSync(exe).isFile() || path.extname(exe).toLowerCase() !== '.exe') throw new Error('Selecione um arquivo .exe válido.');
     const name = path.parse(exe).name.replace(/[_-]/g, ' ');
-    const game = normalizeGame({name,exe,cwd:path.dirname(exe)});
+    const game = normalizeGame({name,exe,cwd:path.dirname(exe),directExe:suggestDirectExe(exe)});
     this.games.push(game); this.save(); return game;
   }
   update(game) {
@@ -90,4 +98,4 @@ class Library {
   remove(id) {this.games = this.games.filter(g => g.id !== id); this.save();}
   find(id) {return this.games.find(g => g.id === id);}
 }
-module.exports = {Library, splitArgs, importLegacyTSV, normalizeGame};
+module.exports = {Library, splitArgs, importLegacyTSV, normalizeGame, suggestDirectExe};

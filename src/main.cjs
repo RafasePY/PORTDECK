@@ -5,7 +5,7 @@ app.commandLine.appendSwitch('autoplay-policy','no-user-gesture-required');
 const {spawn} = require('node:child_process');
 const {readFileSync, existsSync, statSync} = require('node:fs');
 const path = require('node:path');
-const {Library, splitArgs} = require('./backend/library.cjs');
+const {Library, splitArgs, suggestDirectExe} = require('./backend/library.cjs');
 let win, db;
 const running = new Map();
 const imageLimit = 12 * 1024 * 1024;
@@ -37,6 +37,10 @@ function registerHandlers() {
   });
   ipcMain.handle('games:update', (_event,game) => {const updated=db.update(game);send();return updated;});
   ipcMain.handle('games:remove', (_event,id) => {if(running.has(id)) throw new Error('Feche o jogo antes de removê-lo.');db.remove(id);send();return true;});
+  ipcMain.handle('games:suggestDirectExecutable', (_event,id) => {
+    const game=db.find(id);
+    return game?suggestDirectExe(game.exe):'';
+  });
   ipcMain.handle('games:chooseExecutable', async () => {
     const r=await dialog.showOpenDialog(win,{title:'Selecionar executável do jogo',properties:['openFile'],filters:[{name:'Executáveis Windows',extensions:['exe']}]});
     return r.canceled ? '' : (r.filePaths[0] || '');

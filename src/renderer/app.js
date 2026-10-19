@@ -35,7 +35,14 @@ async function refresh(g){games=g.sort((a,b)=>{const as=a.lastPlayed?Date.parse(
 async function add(){if(demo){inform('Modo demonstração: instale o aplicativo para adicionar jogos.');return;}try{const g=await bridge.add();if(g){await refresh(await bridge.list());select(g.id);edit(g.id);}}catch(e){err(e);}}
 async function play(){const g=current();if(!g)return;window.dispatchEvent(new CustomEvent('portdeck:play',{detail:{id:g.id}}));if(demo){inform(`Prévia: jogando ${g.name}. No app o .exe abrirá aqui.`);return;}try{await bridge.play(g.id);inform(`Iniciando ${g.name}...`);}catch(e){err(e);}}
 async function configure(){const g=current();if(!g)return;try{await bridge.configure(g.id);}catch(e){err(e);}}
-function edit(id){const g=gameById(id);if(!g)return;window.dispatchEvent(new CustomEvent('portdeck:modal'));modalId=id;$('modal-title').textContent=g.name;for(const key of ['name','exe','args','cwd','config','directExe','cover','fps'])$('f-'+key).value=safe(g[key]);$('modal-screen').hidden=false;$('f-name').focus();}
+function edit(id){const g=gameById(id);if(!g)return;window.dispatchEvent(new CustomEvent('portdeck:modal'));modalId=id;$('modal-title').textContent=g.name;for(const key of ['name','exe','args','cwd','config','directExe','cover','fps'])$('f-'+key).value=safe(g[key]);$('modal-screen').hidden=false;$('f-name').focus();
+  if(!g.directExe&&bridge?.suggestDirectExecutable)bridge.suggestDirectExecutable(id).then(candidate=>{
+    if(candidate&&modalId===id&&!$('f-directExe').value.trim()){
+      $('f-directExe').value=candidate;
+      inform('Encontramos um executável direto! Confira e clique em SALVAR PERFIL.');
+    }
+  }).catch(()=>{});
+}
 function closeModal(){$('modal-screen').hidden=true;modalId='';}
 async function saveForm(e){e.preventDefault();const g=gameById(modalId);if(!g||!bridge)return;const next={...g};for(const key of ['name','exe','args','cwd','config','directExe','cover','fps'])next[key]=$('f-'+key).value.trim();try{await bridge.update(next);closeModal();inform('Perfil salvo.');}catch(e){err(e);}}
 async function removeGame(){if(!modalId||!bridge)return;const g=gameById(modalId);if(!confirm(`Remover ${g.name} da biblioteca? Isso NÃO exclui os arquivos do jogo.`))return;try{await bridge.remove(modalId);closeModal();inform('Jogo removido da biblioteca.');}catch(e){err(e);}}
