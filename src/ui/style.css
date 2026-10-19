@@ -185,3 +185,102 @@ main{position:relative;min-height:0;flex:1;overflow:hidden}.home{height:100%;dis
  .game-context-menu{width:min(310px,92vw)}
 }
 @media(prefers-reduced-motion:reduce){.game-close-spinner.is-spinning{animation:none}}
+
+
+/* === PORTDECK 0.4.2 — Pulse Core Design System ========================== */
+:root{--pd-accent:#a7e8dc;--pd-text:#eef3f6;--pd-muted:#a8b6c4;--pd-border:rgba(224,239,245,.20)}
+body{font-family:"Segoe UI Variable Text","Segoe UI",Arial,sans-serif;letter-spacing:0}
+.portdeck-core{width:35px;height:35px;flex-shrink:0;display:block;overflow:visible;filter:drop-shadow(0 2px 10px rgba(104,212,195,.24))}
+.portdeck-core .core-arc{transform-origin:50% 50%;animation:core-orbit 11s linear infinite}
+.portdeck-core-large{width:116px;height:116px;filter:drop-shadow(0 16px 36px rgba(77,212,207,.20))}
+.pd-gate{position:fixed;inset:0;z-index:110;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 45%,#17232f 0%,#0a1422 49%,#050a12 100%);isolation:isolate}
+.pd-gate-aura{position:absolute;z-index:-1;width:min(80vw,880px);height:min(80vw,880px);border-radius:50%;background:radial-gradient(circle,transparent 30%,#66e2cf14 49%,transparent 65%);animation:gate-breathe 5.5s ease-in-out infinite alternate;pointer-events:none}
+.pd-gate-inner{display:flex;flex-direction:column;align-items:center;gap:0}
+.pd-gate-icon{display:grid;place-items:center;margin-bottom:18px}
+.pd-gate-icon .portdeck-core-large{animation:gate-arrive .9s cubic-bezier(.2,.85,.16,1) both}
+.pd-gate-icon .core-arc{animation:core-orbit 4.8s linear infinite}
+.pd-gate-brand{font-size:clamp(42px,5vw,66px);font-weight:920;letter-spacing:-.065em;color:#fbffff;text-shadow:0 14px 42px #0008}
+.pd-gate-brand span{font-weight:300;letter-spacing:-.065em;color:#c1d5df}
+.pd-gate-edition{color:#92afaF;font-size:11px;letter-spacing:.26em;font-weight:700;margin-top:15px}
+.pd-gate-bottom{position:absolute;bottom:clamp(58px,13vh,140px);display:flex;align-items:center;flex-direction:column;gap:12px}
+.pd-gate-rule{height:1px;width:190px;background:linear-gradient(90deg,transparent,#88d6ca,transparent);margin-bottom:20px}
+.pd-gate-bottom button{font-size:clamp(12px,1.2vw,16px);font-weight:780;letter-spacing:.16em;padding:13px 22px;background:transparent;border:0;border-radius:6px;color:#f1f8f8;animation:gate-prompt 2.6s ease-in-out infinite}
+.pd-gate-bottom button:disabled{opacity:.42;animation:none}
+.pd-gate-bottom button:focus-visible{outline:2px solid #ace8dc;outline-offset:5px}
+.pd-gate-bottom span{font-size:11px;letter-spacing:.03em;color:#a6bbcb}
+@keyframes core-orbit{to{transform:rotate(360deg)}}
+@keyframes gate-breathe{to{transform:scale(1.17);opacity:.45}}
+@keyframes gate-prompt{50%{opacity:.68}}
+@keyframes gate-arrive{from{opacity:0;transform:scale(.76) rotate(-16deg);filter:blur(8px)}to{opacity:1;transform:scale(1) rotate(0);filter:blur(0)}}
+
+/* Visual refinado: sem contornos brilhantes contínuos, respiro maior e foco discreto. */
+.header{height:clamp(66px,7.5vh,84px);border-bottom-color:#ebf8ff13}
+.branding{gap:11px;font-size:21px;letter-spacing:-1.15px}
+.branding em{color:#a6dad2;border-color:#9dc8c170;background:#789d9520;border-radius:3px;padding:4px 6px}
+.branding .wordmark{font-weight:800}
+.header nav{gap:32px}
+.header nav button.on:after{height:2px;box-shadow:none;background:#b0eee4}
+.shell .wallpaper{filter:brightness(.82) saturate(.91)}
+.shell .vignette{background:linear-gradient(90deg,#07111ce9 0%,#0b1524e1 21%,#0b152496 38%,transparent 78%),linear-gradient(0deg,#060d19cb,transparent 33%),linear-gradient(180deg,#070d17c9 0%,transparent 29%)}
+.console-shelf{height:clamp(165px,19.3vh,215px);padding-top:16px}
+.console-shelf-scroll{gap:17px;padding-left:13px;margin-left:-13px}
+.console-tile{flex-basis:clamp(125px,8.8vw,170px);height:calc(100% - 9px);gap:8px}
+.console-tile .console-tile-art{border:1px solid #ebf8f834;border-radius:9px;box-shadow:0 9px 20px #0005}
+.console-tile .console-tile-art img{object-fit:cover}
+.console-tile.active .console-tile-art{border:2px solid #b7e9e1;box-shadow:0 0 0 2px #8ed6ca2c,0 14px 30px #0008}
+.console-tile.active{transform-origin:center top}
+.console-tile:hover .console-tile-art{border-color:#d2f7f1}
+.console-tile-caption{font-size:12px;font-weight:540;color:#dce9e9}
+.console-tile.active .console-tile-caption{font-weight:720}
+.console-tile:focus-visible .console-tile-art{outline:2px solid #d7fffc;outline-offset:3px}
+.console-add{flex-basis:clamp(76px,5.9vw,110px);height:calc(100% - 26px);margin-top:3px;gap:7px;background:#172332a8;border:1px dashed #dde7e64d;box-shadow:none;color:#c7d9df}
+.console-add span{font-size:32px;font-weight:280}
+.console-add small{font-size:10px;font-weight:510}
+.console-add:hover{background:#293544c0;border-color:#b4ede3}
+.console-shelf-progress{font-weight:520;letter-spacing:.08em;background:transparent}
+.console-stage{align-items:center}
+.console-story{width:min(610px,58vw);padding-bottom:42px}
+.console-eyebrow{font-size:10px;font-weight:710;letter-spacing:.16em;color:#9ed1ca}
+.console-led{width:5px;height:5px;box-shadow:none;background:#a6f6df}
+.console-story h1{font-size:clamp(48px,5.35vw,88px);font-weight:740;letter-spacing:-.045em;line-height:1.02;text-shadow:0 4px 25px #000a;margin:23px 0 14px}
+.console-game-logo{max-height:clamp(104px,17vh,200px);margin:19px 0 18px;filter:drop-shadow(0 5px 15px #0009)}
+.console-description{font-size:16px;font-weight:360;line-height:1.48;color:#d1dce3}
+.console-metadata{color:#bdcbd3;font-size:12px;font-weight:440;gap:16px;margin:12px 0 26px}
+.console-metadata span+span{padding-left:16px}
+.console-actions{gap:10px}
+.console-btn{min-height:50px;padding:0 22px;font-size:14px;box-shadow:none!important;border-radius:7px;font-weight:690;transition:transform .17s ease,background .17s ease,border .17s ease}
+.console-btn:hover{transform:translateY(-1px)}
+.console-btn.console-play{min-width:182px;border:1px solid #ebffff5e;color:#112028;background:#e7f6f4;box-shadow:none!important}
+.console-btn.console-play:hover{background:#fff;color:#12232c}
+.console-btn.console-secondary{min-width:144px;border:1px solid #eff7fd3f;background:#111c29b3;backdrop-filter:blur(10px);font-weight:590}
+.console-btn.console-secondary:hover{background:#304154b4}
+.console-btn.console-focused{outline:2px solid #d5f7ed;outline-offset:3px}
+.console-hint{font-size:10px;color:#abbeca8d}
+.game-context-menu{border-radius:7px;border-color:#f1f5fc3b;background:#151d28f7;box-shadow:0 24px 75px #000c;width:min(322px,92vw)}
+.game-context-menu [role="menuitem"]{border-radius:5px;padding:11px 14px;font-weight:440}
+.game-context-menu [role="menuitem"]:focus,.game-context-menu [role="menuitem"]:hover{background:#4051659c;border-color:#d1e3e849}
+.game-menu-title{font-weight:660;letter-spacing:.01em}
+.pad-status{font-size:12px;white-space:nowrap}
+.pad-status svg{color:#a4d6cb}
+.statusbar{border-top:1px solid #f7ffff1b;color:#abbac8}
+.statusbar .keycap{background:#f4ffff19;border:1px solid #e0ebf53a;font-weight:650;margin-left:7px;border-radius:4px}
+@media(max-height:790px){
+ .console-shelf{height:clamp(129px,19.5vh,160px);padding-top:8px}
+ .console-tile{flex-basis:clamp(107px,9vw,140px)}
+ .console-add{flex-basis:78px}
+ .console-story{padding-bottom:18px}
+ .console-game-logo{max-height:103px}
+ .console-story h1{font-size:clamp(39px,5vw,62px)}
+ .console-metadata{margin-bottom:16px}
+ .console-btn{min-height:44px}
+}
+@media(max-width:810px){
+ .pad-status{max-width:30px;font-size:0}
+ .console-story{width:min(560px,89vw)}
+ .console-shelf{height:132px}
+ .console-tile{flex-basis:108px}
+ .console-add{flex-basis:65px}
+}
+@media(prefers-reduced-motion:reduce){
+ .core-arc,.pd-gate-aura,.pd-gate-bottom button,.pd-gate-icon .portdeck-core-large{animation:none!important}
+}
