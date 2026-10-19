@@ -6,7 +6,8 @@ const {spawn} = require('node:child_process');
 const {readFileSync, existsSync, statSync} = require('node:fs');
 const path = require('node:path');
 const {Library, splitArgs, suggestDirectExe} = require('./backend/library.cjs');
-let win, db;
+const {AssetStore} = require('./backend/assets.cjs');
+let win, db, assetStore;
 const running = new Map();
 const imageLimit = 12 * 1024 * 1024;
 const send = () => {if (win && !win.isDestroyed()) win.webContents.send('library:changed', db.list());};
@@ -45,16 +46,24 @@ function registerHandlers() {
     const r=await dialog.showOpenDialog(win,{title:'Selecionar executável do jogo',properties:['openFile'],filters:[{name:'Executáveis Windows',extensions:['exe']}]});
     return r.canceled ? '' : (r.filePaths[0] || '');
   });
+  ipcMain.handle('assets:import', async (_event,id,kind) => {
+    if(!db.find(id))throw new Error('Jogo não encontrado.');
+    if(!['cover','banner','logo'].includes(kind))throw new Error('Tipo de arte desconhecido.');
+    const r=await dialog.showOpenDialog(win,{
+      title:kind==='cover'?'Importar capa':kind==='banner'?'Importar banner':'Importar logotipo',
+      properties:['openFile'],filters:[{name:'Arte PNG/JPG/WebP',extensions:['png','jpg','jpeg','webp']}]
+    });
+    if(r.canceled||!r.filePaths[0])return null;
+    const file=assetStore.import(id,kind,r.filePaths[0]);
+    return {path:file,preview:assetStore.read(file)};
+  });
   ipcMain.handle('covers:choose', async () => {
     const r = await dialog.showOpenDialog(win,{title:'Escolher capa',properties:['openFile'],filters:[{name:'Imagens',extensions:['png','jpg','jpeg','webp']}]});
     return r.canceled ? '' : r.filePaths[0] || '';
   });
   ipcMain.handle('covers:load', (_event,cover) => {
-    if (typeof cover !== 'string' || !/\.(png|jpe?g|webp)$/i.test(cover) || !existsSync(cover)) return '';
-    if (statSync(cover).size > imageLimit) return '';
-    const ext=path.extname(cover).toLowerCase();
-    const mime=ext==='.png'?'image/png':ext==='.webp'?'image/webp':'image/jpeg';
-    return `data:${mime};base64,${readFileSync(cover).toString('base64')}`;
+    try{return assetStore.read(cover);}
+    catch(err){console.warn('PortDeck: imagem não carregada:',errorMessage(err));return '';}
   });
   ipcMain.handle('window:close', () => {win?.close(); return true;});
   ipcMain.handle('window:toggleFullscreen', () => {win.setFullScreen(!win.isFullScreen());return win.isFullScreen();});
@@ -96,6 +105,7 @@ function runGame(id, configure) {
 app.whenReady().then(()=>{
   const appdata=path.join(app.getPath('appData'),'PortDeck');
   try {db=new Library(appdata);}catch(e){dialog.showErrorBox('Biblioteca do PortDeck',`Não foi possível ler os jogos: ${errorMessage(e)}`);app.quit();return;}
+  assetStore=new AssetStore(appdata);
   registerHandlers();createWindow();
   app.on('activate',()=>{if(BrowserWindow.getAllWindows().length===0)createWindow();});
 });

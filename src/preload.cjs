@@ -8,6 +8,7 @@ contextBridge.exposeInMainWorld('portdeck',Object.freeze({
   play:id=>ipcRenderer.invoke('games:play',id),
   configure:id=>ipcRenderer.invoke('games:configure',id),
   chooseCover:()=>ipcRenderer.invoke('covers:choose'),
+  importArt:(id,kind)=>ipcRenderer.invoke('assets:import',id,kind),
   chooseExecutable:()=>ipcRenderer.invoke('games:chooseExecutable'),
   suggestDirectExecutable:id=>ipcRenderer.invoke('games:suggestDirectExecutable',id),
   loadCover:path=>ipcRenderer.invoke('covers:load',path),
