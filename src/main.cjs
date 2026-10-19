@@ -7,7 +7,7 @@ const {existsSync} = require('node:fs');
 const path = require('node:path');
 const {Library, splitArgs, suggestDirectExe} = require('./backend/library.cjs');
 const {AssetStore} = require('./backend/assets.cjs');
-let win, db, assetStore;
+let win, db, assetStore, inputBridge;
 const running = new Map();
 const imageLimit = 12 * 1024 * 1024;
 const send = () => {if (win && !win.isDestroyed()) win.webContents.send('library:changed', db.list());};
@@ -28,6 +28,39 @@ function createWindow() {
   win.loadFile(path.join(__dirname, '..', 'dist', 'index.html'));
   win.once('ready-to-show', () => win.show());
   win.on('closed', () => {win=null;});
+}
+
+function startInputBridge(){
+  if(process.platform!=='win32')return;
+  const exe=app.isPackaged
+    ? path.join(process.resourcesPath,'native','PortDeckInputBridge.exe')
+    : path.join(__dirname,'..','assets','native','PortDeckInputBridge.exe');
+  if(!existsSync(exe)){console.info('PortDeck: XInput bridge não foi compilado. Atalho disponível com janela em foco.');return;}
+  try{
+    const helper=spawn(exe,[],{windowsHide:true,stdio:['pipe','pipe','ignore'],shell:false});
+    inputBridge=helper;
+    let buffer='';
+    helper.stdout.setEncoding('utf8');
+    helper.stdout.on('data',chunk=>{
+      buffer+=chunk;
+      if(buffer.length>2048){buffer='';return;}
+      let next;
+      while((next=buffer.indexOf('\n'))!==-1){
+        const line=buffer.slice(0,next).trim();buffer=buffer.slice(next+1);
+        if(!/^HOME [0-3]$/.test(line))continue;
+        // Só recupera o PortDeck quando ELE tem um jogo iniciado sob acompanhamento.
+        if(running.size===0||!win||win.isDestroyed()||win.isFocused())continue;
+        try{
+          if(win.isMinimized())win.restore();
+          win.show();
+          win.focus();
+          win.webContents.send('input:home');
+        }catch(err){console.warn('PortDeck: não conseguiu recuperar a janela:',errorMessage(err));}
+      }
+    });
+    helper.once('error',err=>{console.warn('XInput bridge indisponível:',errorMessage(err));inputBridge=null;});
+    helper.once('close',()=>{if(inputBridge===helper)inputBridge=null;});
+  }catch(err){console.warn('Não foi possível iniciar o XInput bridge:',errorMessage(err));}
 }
 
 function registerHandlers() {
@@ -135,7 +168,8 @@ app.whenReady().then(()=>{
   const appdata=path.join(app.getPath('appData'),'PortDeck');
   try {db=new Library(appdata);}catch(e){dialog.showErrorBox('Biblioteca do PortDeck',`Não foi possível ler os jogos: ${errorMessage(e)}`);app.quit();return;}
   assetStore=new AssetStore(appdata);
-  registerHandlers();createWindow();
+  registerHandlers();createWindow();startInputBridge();
   app.on('activate',()=>{if(BrowserWindow.getAllWindows().length===0)createWindow();});
 });
+app.on('before-quit',()=>{if(inputBridge&&!inputBridge.killed){try{inputBridge.stdin?.end();inputBridge.kill();}catch{}}});
 app.on('window-all-closed',()=>{if(process.platform!=='darwin')app.quit();});
