@@ -37,3 +37,12 @@ test('suggests a sibling Play executable, but never invents a missing one',()=>{
     assert.equal(db.add(regular).directExe,direct);
   }finally{fs.rmSync(dir,{recursive:true,force:true});}
 });
+
+test('stores cinematic banner and logo paths without changing existing library',()=>{
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'pd-art-'));
+  try{const exe=path.join(dir,'game.exe');fs.writeFileSync(exe,'demo');
+    const db=new Library(dir),g=db.add(exe);
+    db.update({...g,banner:'E:\\art\\banner.png',logo:'E:\\art\\logo.webp'});
+    const other=new Library(dir).list()[0];assert.equal(other.banner,'E:\\art\\banner.png');assert.equal(other.logo,'E:\\art\\logo.webp');
+  }finally{fs.rmSync(dir,{recursive:true,force:true});}
+});

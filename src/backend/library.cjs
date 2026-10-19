@@ -36,6 +36,8 @@ function normalizeGame(g) {
     config: clean(g.config),
     directExe: clean(g.directExe),
     cover: clean(g.cover),
+    banner: clean(g.banner),
+    logo: clean(g.logo),
     fps: clean(g.fps),
     playedSeconds: Math.max(0, Number(g.playedSeconds ?? g.played) || 0),
     lastPlayed: clean(g.lastPlayed),
