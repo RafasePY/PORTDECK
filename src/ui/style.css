@@ -31,3 +31,11 @@ main{position:relative;min-height:0;flex:1;overflow:hidden}.home{height:100%;dis
 @media(max-width:1060px){.header{gap:24px}.pad-status{font-size:0;gap:0}.pad-status svg{width:20px}.hero-content>div{max-width:72vw}.hero-content h1{font-size:clamp(42px,7vw,75px)}.covers>div{flex-basis:160px}.tile-visual{height:185px}}
 @media(max-width:720px){.layout{padding:0 18px}.header{gap:15px;height:65px}.branding{font-size:18px}.branding em,.header nav{display:none}.head-right{gap:6px}.head-icon{width:32px;height:32px}.hero-content{align-items:flex-start;padding-top:11vh}.hero-content>div{max-width:95vw}.hero-content h1{font-size:clamp(38px,9vw,63px)}.hero-logo{width:75vw}.subline{display:none}.statusbar small{display:none}.covers>div{flex-basis:150px}.tile-visual{height:190px}.two-fields{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){*,*:after,*:before{animation-duration:.001ms!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}
+
+/* v0.4: prévias persistentes das artes gerenciadas do jogo */
+.art-preview{display:flex;align-items:center;justify-content:center;position:relative;width:100%;height:124px;border:1px solid #a7ceec36;border-radius:10px;background:#0612239e;overflow:hidden;margin-top:3px}
+.art-preview img{width:100%;height:100%;object-fit:contain;display:block;padding:5px}
+.art-preview small{position:absolute;right:7px;bottom:7px;padding:4px 8px;background:#061624e0;border-radius:5px;color:#a6ffdb;font-size:10px}
+.art-preview.missing{border-style:dashed;border-color:#d4e4f53a;min-height:58px;height:70px;color:#90aaba}
+.art-preview.missing span{font-size:11px;font-weight:450;text-align:center;max-width:85%}
+.art-error{color:#ff9aa6!important;font-size:12px;font-weight:600!important;line-height:1.4}
