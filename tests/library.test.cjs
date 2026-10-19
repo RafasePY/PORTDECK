@@ -16,7 +16,10 @@ test('adds, edits and removes without touching game files',()=>{
   const dir=fs.mkdtempSync(path.join(os.tmpdir(),'pd-'));
   try{const exe=path.join(dir,'my-game.exe');fs.writeFileSync(exe,'demo');const db=new Library(dir);
     const g=db.add(exe);assert.equal(db.list().length,1);
-    db.update({...g,name:'Meu jogo',playedSeconds:42});assert.equal(new Library(dir).list()[0].playedSeconds,42);
+    const direct=path.join(dir,'Play my-game.exe');fs.writeFileSync(direct,'demo');
+    db.update({...g,name:'Meu jogo',playedSeconds:42,directExe:direct});
+    const persisted=new Library(dir).list()[0];assert.equal(persisted.playedSeconds,42);assert.equal(persisted.directExe,direct);
+    assert.throws(()=>db.update({...g,directExe:path.join(dir,'inexistente.exe')}));
     db.remove(g.id);assert.equal(new Library(dir).list().length,0);assert.ok(fs.existsSync(exe));
   } finally {fs.rmSync(dir,{recursive:true,force:true});}
 });

@@ -35,6 +35,10 @@ function registerHandlers() {
   });
   ipcMain.handle('games:update', (_event,game) => {const updated=db.update(game);send();return updated;});
   ipcMain.handle('games:remove', (_event,id) => {if(running.has(id)) throw new Error('Feche o jogo antes de removê-lo.');db.remove(id);send();return true;});
+  ipcMain.handle('games:chooseExecutable', async () => {
+    const r=await dialog.showOpenDialog(win,{title:'Selecionar executável do jogo',properties:['openFile'],filters:[{name:'Executáveis Windows',extensions:['exe']}]});
+    return r.canceled ? '' : (r.filePaths[0] || '');
+  });
   ipcMain.handle('covers:choose', async () => {
     const r = await dialog.showOpenDialog(win,{title:'Escolher capa',properties:['openFile'],filters:[{name:'Imagens',extensions:['png','jpg','jpeg','webp']}]});
     return r.canceled ? '' : r.filePaths[0] || '';
@@ -56,8 +60,9 @@ function runGame(id, configure) {
   const g=db.find(id);
   if (!g) throw new Error('Esse jogo não está na biblioteca.');
   if (!configure && running.has(id)) throw new Error('Esse jogo já está sendo executado.');
-  const exe=configure?g.config:g.exe;
-  if (!exe) throw new Error('Esse jogo não possui configurador definido.');
+  // Configurar sempre abre o launcher original, salvo quando um configurador foi definido.
+  // Jogar prioriza o .exe direto (ex.: Play God of War III.exe).
+  const exe=configure?(g.config || g.exe):(g.directExe || g.exe);
   if (!existsSync(exe) || path.extname(exe).toLowerCase()!=='.exe') throw new Error('Executável não encontrado. Abra Configurar para corrigir o caminho.');
   const cwd=g.cwd && existsSync(g.cwd) ? g.cwd : path.dirname(exe);
   const args=configure?[]:splitArgs(g.args);

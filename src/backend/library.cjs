@@ -34,6 +34,7 @@ function normalizeGame(g) {
     args: clean(g.args),
     cwd: clean(g.cwd || g.work),
     config: clean(g.config),
+    directExe: clean(g.directExe),
     cover: clean(g.cover),
     fps: clean(g.fps),
     playedSeconds: Math.max(0, Number(g.playedSeconds ?? g.played) || 0),
@@ -82,6 +83,7 @@ class Library {
     const index = this.games.findIndex(g => g.id === game.id);
     if (index < 0) throw new Error('Jogo não encontrado.');
     if (!game.exe || path.extname(game.exe).toLowerCase() !== '.exe' || !fs.existsSync(game.exe)) throw new Error('Caminho do executável inválido.');
+    if (game.directExe && (path.extname(game.directExe).toLowerCase() !== '.exe' || !fs.existsSync(game.directExe))) throw new Error('O executável direto precisa ser um .exe existente.');
     this.games[index] = normalizeGame({...this.games[index], ...game});
     this.save(); return this.games[index];
   }

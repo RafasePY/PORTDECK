@@ -11,17 +11,17 @@
   <div class="ambient"></div><div class="grain"></div>
   <div class="app">
     <header class="topbar">
-      <div class="brand"><span class="brand-mark">▰</span><span>PORT<span class="brand-light">DECK</span></span><span class="version">BETA 0.2</span></div>
+      <div class="brand"><span class="brand-mark" aria-hidden="true"><span class="brand-core"></span></span><span>PORT<span class="brand-light">DECK</span></span><span class="version">PULSE 0.2.1</span></div>
       <nav class="nav" aria-label="Navegação principal">
         <button class="nav-item active" id="tab-home" data-view="home">Início</button>
         <button class="nav-item" id="tab-library" data-view="library">Biblioteca</button>
       </nav>
-      <div class="top-right"><div class="controller-info" id="controller-info"><span class="status-dot"></span><span id="controller-name">Teclado / mouse</span></div><button class="icon-button" id="toggle-fullscreen" title="Alternar tela cheia (F11)" aria-label="Alternar tela cheia">⛶</button></div>
+      <div class="top-right"><button id="sound-toggle" class="icon-button sound-toggle" aria-label="Desativar sons" title="Sons da interface">♫</button><div class="controller-info" id="controller-info"><span class="status-dot"></span><span id="controller-name">Teclado / mouse</span></div><button class="icon-button" id="toggle-fullscreen" title="Alternar tela cheia (F11)" aria-label="Alternar tela cheia">⛶</button></div>
     </header>
 
     <main id="home-view" class="view">
       <section class="hero" aria-label="Jogo selecionado">
-        <div class="hero-backdrop" id="hero-backdrop"></div>
+        <div class="hero-backdrop" id="hero-backdrop"></div><div class="pulse-orbit orbit-one" aria-hidden="true"></div><div class="pulse-orbit orbit-two" aria-hidden="true"></div><div class="pulse-stars" aria-hidden="true"></div>
         <div class="hero-veil"></div>
         <div class="hero-info" id="hero-info">
           <div class="eyebrow"><span class="line"></span> SUA BIBLIOTECA PESSOAL</div>
@@ -38,7 +38,7 @@
 
       <section class="shelf">
         <div class="section-heading"><div><span class="mini-label">SEUS JOGOS</span><h2>Continue a jogar <span class="count" id="games-count">0</span></h2></div><button class="text-action" id="add-game-top">+ Adicionar port <span>↗</span></button></div>
-        <div class="games-row" id="games-row" role="listbox" aria-label="Jogos cadastrados"></div>
+        <div class="shelf-frame"><button class="shelf-arrow shelf-arrow-left" id="shelf-prev" title="Jogo anterior" aria-label="Jogo anterior">‹</button><div class="games-row" id="games-row" role="listbox" aria-label="Jogos cadastrados"></div><button class="shelf-arrow shelf-arrow-right" id="shelf-next" title="Próximo jogo" aria-label="Próximo jogo">›</button></div>
         <div class="empty-state" id="empty-state" hidden><span class="empty-icon">✦</span><h3>Sua biblioteca está esperando.</h3><p>Adicione o primeiro port para começar.</p><button class="btn btn-primary" id="add-first">+ ADICIONAR PORT</button></div>
       </section>
     </main>
@@ -54,10 +54,12 @@
 
   <div class="modal-screen" id="modal-screen" hidden><div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
     <div class="modal-header"><div><span class="mini-label">PERFIL DO JOGO</span><h2 id="modal-title">Configurações</h2></div><button class="icon-button" id="modal-close" aria-label="Fechar">✕</button></div>
-    <form id="game-form"><label>Nome do jogo<input id="f-name" maxlength="160" required></label><label>Arquivo executável (.exe)<input id="f-exe" required></label><label>Parâmetros de inicialização<input id="f-args" placeholder="Opcional"></label><label>Diretório de trabalho<input id="f-cwd" placeholder="Pasta do jogo"></label><label>Configurador do jogo (.exe)<input id="f-config" placeholder="Opcional"></label><label>FPS de referência<input id="f-fps" placeholder="Informativo; não limita FPS"></label>
+    <form id="game-form"><label>Nome do jogo<input id="f-name" maxlength="160" required></label><label>Arquivo executável (.exe)<input id="f-exe" required></label><label>Parâmetros de inicialização<input id="f-args" placeholder="Opcional"></label><label>Diretório de trabalho<input id="f-cwd" placeholder="Pasta do jogo"></label><label>Executável direto para Jogar (opcional)<div class="inline-input"><input id="f-directExe" placeholder="Ex.: Play God of War III.exe"><button type="button" class="btn btn-secondary btn-small" id="pick-direct">Procurar</button></div><small class="field-help">Quando preenchido, Jogar abre este arquivo, pulando o launcher. Deixe vazio para executar o arquivo principal.</small></label><label>Configurador do jogo (.exe)<input id="f-config" placeholder="Opcional; se vazio, usa o executável principal"></label><button type="button" class="launch-settings" id="open-game-launcher">↗ ABRIR CONFIGURADOR ORIGINAL</button><label>FPS de referência<input id="f-fps" placeholder="Informativo; não limita FPS"></label>
     <label>Capa personalizada<div class="inline-input"><input id="f-cover" placeholder="PNG, JPG ou WEBP"><button type="button" class="btn btn-secondary btn-small" id="pick-cover">Escolher</button></div></label>
     <div class="form-actions"><button type="button" id="remove-game" class="danger-button">Remover da biblioteca</button><button class="btn btn-primary btn-small" type="submit">SALVAR PERFIL</button></div></form>
   </div></div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="boot-screen" id="boot-screen" aria-label="Iniciando PortDeck"><div class="boot-aura"></div><div class="boot-brand"><div class="boot-glyph"><span></span></div><div class="boot-wordmark">PORT<span>DECK</span></div><div class="boot-caption">SEU UNIVERSO. UMA BIBLIOTECA.</div><div class="boot-loader"><i></i></div></div><div class="boot-skip">PRESSIONE QUALQUER BOTÃO PARA CONTINUAR</div></div>
   <script src="./app.js"></script>
+  <script src="./experience.js"></script>
 </body></html>
