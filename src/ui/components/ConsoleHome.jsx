@@ -45,7 +45,6 @@ export default function ConsoleHome({games,game,art,selected,onSelect,onPlay,onC
               <button className={'console-btn console-secondary'+(zone==='actions'&&actionIndex===2?' console-focused':'')} onFocus={()=>{onZone('actions');onAction(2);}} onClick={e=>{onZone('actions');onAction(2);const r=e.currentTarget.getBoundingClientRect();onMenu(game.id,r.left,r.bottom+8);}}>••• Mais opções</button>
             </>}
           </div>
-        </motion.div>}</AnimatePresence>}
         </motion.div>
       </AnimatePresence>
     </div>
