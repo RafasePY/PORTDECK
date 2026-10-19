@@ -1,0 +1,37 @@
+PORTDECK 0.1.2 - CORRECAO DE INICIALIZACAO
+========================================
+Windows 10/11 64 bits. Nao necessita Python.
+
+TESTE RECOMENDADO
+1. Feche totalmente o PortDeck antigo (se estiver aberto).
+2. Inicie PortDeck_Portatil_v0.1.2_Windows.exe.
+3. Selecione o seu port e aperte JOGAR.
+4. Se funcionar, execute PortDeck_Instalador_v0.1.2_Windows.exe
+   para atualizar a instalacao antiga (ou continue na versao portatil).
+
+CORRECOES
+- Corrigido tamanho/layout da estrutura STARTUPINFOW usada por CreateProcessW
+  para inicializar executaveis. A definicao anterior estava incompleta,
+  podendo fazer o aplicativo fechar quando o usuario clicava em JOGAR.
+- Criado registro de diagnostico para inicializacoes de jogos.
+- Em caso de erro retornado pelo Windows, exibimos o numero do erro.
+- Mantido suporte a biblioteca, capas, argumentos, pasta de trabalho,
+  configurador externo, horas de jogo e XInput.
+
+SE O PROBLEMA CONTINUAR
+Abra Explorador de Arquivos > barra de enderecos e cole:
+  %APPDATA%\PortDeck\portdeck_debug.txt
+O log e um arquivo de texto Unicode: envie o conteudo com as ultimas
+linhas (removendo nomes de usuario e caminhos privados, se desejar).
+Se nao houver arquivo, diga se a janela sumiu ou se apareceu algum erro.
+
+JOGOS SALVOS
+A biblioteca permanece em %APPDATA%\PortDeck\native_library.tsv.
+A instalacao ou troca pela versao portatil nao apaga a biblioteca.
+
+SEGURANCA / LIMITES
+Nao precisa baixar ou copiar DLLs, executar como administrador ou
+mudar configuracoes de compatibilidade para corrigir este erro.
+Nao foi possivel validar o aplicativo em um computador Windows real;
+foi verificado o layout do codigo e compilacao do arquivo PE64.
+Executaveis nao possuem assinatura digital.

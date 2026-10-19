@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'none'">
+  <title>PortDeck</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div class="ambient"></div><div class="grain"></div>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">▰</span><span>PORT<span class="brand-light">DECK</span></span><span class="version">BETA 0.2</span></div>
+      <nav class="nav" aria-label="Navegação principal">
+        <button class="nav-item active" id="tab-home" data-view="home">Início</button>
+        <button class="nav-item" id="tab-library" data-view="library">Biblioteca</button>
+      </nav>
+      <div class="top-right"><div class="controller-info" id="controller-info"><span class="status-dot"></span><span id="controller-name">Teclado / mouse</span></div><button class="icon-button" id="toggle-fullscreen" title="Alternar tela cheia (F11)" aria-label="Alternar tela cheia">⛶</button></div>
+    </header>
+
+    <main id="home-view" class="view">
+      <section class="hero" aria-label="Jogo selecionado">
+        <div class="hero-backdrop" id="hero-backdrop"></div>
+        <div class="hero-veil"></div>
+        <div class="hero-info" id="hero-info">
+          <div class="eyebrow"><span class="line"></span> SUA BIBLIOTECA PESSOAL</div>
+          <h1 id="featured-title">Sua próxima aventura começa aqui.</h1>
+          <p class="hero-description" id="featured-subtitle">Adicione seus ports e jogue direto, sem menus complicados.</p>
+          <div class="hero-stats"><span class="stat" id="featured-hours">◷ &nbsp;0h jogadas</span><span class="stat" id="featured-fps">▤ &nbsp;Perfil pronto</span></div>
+          <div class="hero-actions">
+            <button class="btn btn-primary" id="play-selected"><span class="play-icon">▶</span> JOGAR AGORA</button>
+            <button class="btn btn-secondary" id="edit-selected">⚙ <span>CONFIGURAR</span></button>
+          </div>
+        </div>
+        <div class="hero-index" id="hero-index">01 <span>/ 01</span></div>
+      </section>
+
+      <section class="shelf">
+        <div class="section-heading"><div><span class="mini-label">SEUS JOGOS</span><h2>Continue a jogar <span class="count" id="games-count">0</span></h2></div><button class="text-action" id="add-game-top">+ Adicionar port <span>↗</span></button></div>
+        <div class="games-row" id="games-row" role="listbox" aria-label="Jogos cadastrados"></div>
+        <div class="empty-state" id="empty-state" hidden><span class="empty-icon">✦</span><h3>Sua biblioteca está esperando.</h3><p>Adicione o primeiro port para começar.</p><button class="btn btn-primary" id="add-first">+ ADICIONAR PORT</button></div>
+      </section>
+    </main>
+
+    <section id="library-view" class="view library-view" hidden>
+      <div class="library-heading"><span class="mini-label">COLEÇÃO</span><h1>Minha biblioteca <span id="library-total">0 jogos</span></h1><p>Todos os seus ports organizados em um só lugar.</p></div>
+      <div class="library-controls"><input id="search" type="search" placeholder="⌕   Buscar na biblioteca..." aria-label="Buscar jogo"><button class="btn btn-primary btn-small" id="add-game-library">+ ADICIONAR PORT</button></div>
+      <div class="game-grid" id="game-grid"></div>
+    </section>
+
+    <footer class="footer"><div class="footer-hint" id="footer-controller"><span class="key">A</span> Jogar <span class="key">X</span> Configurar <span class="key">LB</span><span class="key">RB</span> Navegar</div><div><span class="footer-powered">PORTDECK</span> <span class="footer-divider">•</span> Sua biblioteca, do seu jeito.</div></footer>
+  </div>
+
+  <div class="modal-screen" id="modal-screen" hidden><div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-header"><div><span class="mini-label">PERFIL DO JOGO</span><h2 id="modal-title">Configurações</h2></div><button class="icon-button" id="modal-close" aria-label="Fechar">✕</button></div>
+    <form id="game-form"><label>Nome do jogo<input id="f-name" maxlength="160" required></label><label>Arquivo executável (.exe)<input id="f-exe" required></label><label>Parâmetros de inicialização<input id="f-args" placeholder="Opcional"></label><label>Diretório de trabalho<input id="f-cwd" placeholder="Pasta do jogo"></label><label>Configurador do jogo (.exe)<input id="f-config" placeholder="Opcional"></label><label>FPS de referência<input id="f-fps" placeholder="Informativo; não limita FPS"></label>
+    <label>Capa personalizada<div class="inline-input"><input id="f-cover" placeholder="PNG, JPG ou WEBP"><button type="button" class="btn btn-secondary btn-small" id="pick-cover">Escolher</button></div></label>
+    <div class="form-actions"><button type="button" id="remove-game" class="danger-button">Remover da biblioteca</button><button class="btn btn-primary btn-small" type="submit">SALVAR PERFIL</button></div></form>
+  </div></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="./app.js"></script>
+</body></html>

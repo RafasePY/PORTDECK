@@ -1,0 +1,25 @@
+{
+  "name": "portdeck",
+  "version": "0.2.0",
+  "description": "PortDeck — biblioteca Big Picture para ports Windows",
+  "main": "src/main.cjs",
+  "author": "PortDeck contributors",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test tests/*.test.cjs",
+    "dist:win": "electron-builder --win nsis portable --publish never"
+  },
+  "devDependencies": {
+    "electron": "^34.5.8",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.portdeck.launcher",
+    "productName": "PortDeck",
+    "directories": {"output": "dist"},
+    "files": ["src/**/*", "package.json"],
+    "win": {"target": [{"target": "nsis", "arch": ["x64"]}, {"target": "portable", "arch": ["x64"]}]},
+    "nsis": {"oneClick": false, "allowToChangeInstallationDirectory": true, "createDesktopShortcut": true, "createStartMenuShortcut": true}
+  }
+}

@@ -1,0 +1,6 @@
+LIBRARY SHELL32.dll
+EXPORTS
+ExtractIconW
+DrawIconEx
+DestroyIcon
+ShellExecuteW
