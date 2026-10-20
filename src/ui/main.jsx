@@ -1,3 +1,4 @@
+import ControlCenter,{LibraryTabs,categoryOf,centerCommand,useDialogFocus,dialogCommand} from './components/ControlCenter.jsx';
 import PlayerProfiles,{profileCommand} from './components/PlayerProfiles.jsx';
 import React,{useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import{createRoot}from'react-dom/client';
@@ -68,6 +69,7 @@ function Cover({game,art,icon,active,onClick,compact=false}){
 }
 const ImagePicker=({label,value,onChange,onSelect,preview,error})=><label className="field"><span>{label}</span><div className="browse-line"><input value={value||''} onChange={e=>onChange(e.target.value)} placeholder="Selecione PNG, JPG ou WebP"/><button type="button" className="thin-btn" onClick={onSelect}>Procurar</button></div>{preview?<div className="art-preview"><img src={preview} alt={'Prévia de '+label}/><small>Imagem carregada</small></div>:<div className="art-preview missing"><span>{value?'A imagem não foi carregada. Importe novamente se necessário.':'Nenhuma imagem importada'}</span></div>}{error&&<small className="art-error">{error}</small>}</label>;
 function EditModal({game,art,onClose,onSave,onDelete,onLaunch,onBrowse,onImage}){
+  const dialogRef=useRef(null);useDialogFocus(dialogRef,onClose);
   const [form,setForm]=useState({...game});
   const [localPreviews,setLocalPreviews]=useState({}),[imageErrors,setImageErrors]=useState({});
   const pickArt=async kind=>{
@@ -82,10 +84,10 @@ function EditModal({game,art,onClose,onSave,onDelete,onLaunch,onBrowse,onImage})
   const put=(field,value)=>setForm(v=>({...v,[field]:value}));
   useEffect(()=>{setForm({...game});setLocalPreviews({});setImageErrors({});},[game.id]);
   return <motion.div className="modal-shade" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} onMouseDown={e=>{if(e.target===e.currentTarget)onClose();}}>
-    <motion.div className="editor" initial={{opacity:0,y:40,scale:.96}} animate={{opacity:1,y:0,scale:1}} exit={{opacity:0,y:20,scale:.97}} transition={{type:'spring',damping:26,stiffness:270}} role="dialog" aria-modal="true" aria-label="Configurar jogo">
+    <motion.div ref={dialogRef} className="editor" initial={{opacity:0,y:40,scale:.96}} animate={{opacity:1,y:0,scale:1}} exit={{opacity:0,y:20,scale:.97}} transition={{type:'spring',damping:26,stiffness:270}} role="dialog" aria-modal="true" aria-label="Configurar jogo">
       <header className="editor-head"><div><small>PERFIL DO JOGO</small><h2>{game.name}</h2></div><button className="ghost-icon" onClick={onClose} aria-label="Fechar"><Icon name="x"/></button></header>
       <form onSubmit={e=>{e.preventDefault();onSave(form);}}>
-        <label className="field"><span>Nome do jogo</span><input required value={form.name||''} onChange={e=>put('name',e.target.value)}/></label>
+        <LibraryTabs label="Aba do aplicativo" value={categoryOf(form)} onChange={v=>put('category',v)}/><label className="field"><span>Nome do jogo</span><input required value={form.name||''} onChange={e=>put('name',e.target.value)}/></label>
         <label className="field"><span>Executável principal (.exe)</span><div className="browse-line"><input required value={form.exe||''} onChange={e=>put('exe',e.target.value)}/><button type="button" className="thin-btn" onClick={async()=>{const s=await onBrowse();if(s)put('exe',s);}}>Procurar</button></div></label>
         <label className="field"><span>Executável direto para Jogar</span><div className="browse-line"><input value={form.directExe||''} onChange={e=>put('directExe',e.target.value)} placeholder="Ex.: Play God of War III.exe"/><button type="button" className="thin-btn" onClick={async()=>{const s=await onBrowse();if(s)put('directExe',s);}}>Procurar</button></div><small>Se disponível, pula a tela inicial do port. Deixe vazio para usar o executável principal.</small></label>
         <button className="open-launcher" type="button" onClick={onLaunch}>Abrir configurador original ↗</button>
@@ -105,14 +107,17 @@ function EditModal({game,art,onClose,onSave,onDelete,onLaunch,onBrowse,onImage})
 function App(){
   const reduced=useReducedMotion(),[menu,setMenu]=useState(null),[closing,setClosing]=useState(null),[focusZone,setFocusZone]=useState('games'),[actionIndex,setActionIndex]=useState(0),[clock,setClock]=useState(new Date()),[games,setGames]=useState([]),[selected,setSelected]=useState(''),[view,setView]=useState('home'),[editing,setEditing]=useState(null),[running,setRunning]=useState([]),[art,setArt]=useState({}),[muted,setMuted]=useState(!defaultSound()),[intro,setIntro]=useState(true),[introReady,setIntroReady]=useState(false),[query,setQuery]=useState(''),[toast,setToast]=useState(''),[pad,setPad]=useState('');
   const gamesRef=useRef(games),stateRef=useRef({}),assetRequests=useRef(new Map()),lastPad=useRef(''),lastPadAt=useRef(0),toastTimeout=useRef(null),selectArea=useRef(null);
-  const game=games.find(g=>g.id===selected)||games[0],focusedId=game?.id;
+  const [tab,setTab]=useState('games');
+  const visible=games.filter(g=>categoryOf(g)===tab);
+  const changeTab=value=>{setTab(value);setView('home');setFocusZone('games');setSelected(gamesRef.current.find(g=>categoryOf(g)===value)?.id||'');};
+  const game=visible.find(g=>g.id===selected)||visible[0],focusedId=game?.id;
   const contextGame=games.find(g=>g.id===menu?.id);
   const closingGame=games.find(g=>g.id===closing?.id);
   const currentArt=game&&(art[game.banner]||art[game.cover]);
   const titleArt=game&&art[game.logo];
   const enabled=!muted;
   const controller=identifyController(pad);
-  useEffect(()=>{if(!api?.onHome)return;return api.onHome(()=>{setMenu(null);setEditing(null);setView('home');setFocusZone('games');announce('PortDeck · Início (Start + Select)');});},[]);
+  useEffect(()=>{if(!api?.onHome)return;return api.onHome(()=>{centerCommand('home');});},[]);
   // Depois da entrada o foco vai para a fileira de jogos.
   const focusShelf=useCallback(()=>{setFocusZone('games');requestAnimationFrame(()=>document.querySelector('.console-tile.active,[data-console-add]')?.focus({preventScroll:true}));},[]);
   const enterConsole=useCallback(()=>{if(!stateRef.current.introReady)return;setIntro(false);},[]);
@@ -122,7 +127,7 @@ function App(){
   const announce=useCallback(message=>{setToast(message);clearTimeout(toastTimeout.current);toastTimeout.current=setTimeout(()=>setToast(''),4200);},[]);
   const fail=useCallback(e=>announce('⚠ '+(e?.message||String(e))),[announce]);
   const reload=useCallback(async()=>{if(api)try{setGames(sortGames(await api.list()));}catch(e){fail(e);}},[fail]);
-  useEffect(()=>{gamesRef.current=games;if(games.length&&!games.some(g=>g.id===selected))setSelected(games[0].id);},[games,selected]);
+  useEffect(()=>{gamesRef.current=games;if(!visible.some(g=>g.id===selected))setSelected(visible[0]?.id||'');},[games,selected,tab]);
   useEffect(()=>{if(!api)return;reload();api.running().then(setRunning).catch(fail);const off=api.onLibrary(g=>setGames(sortGames(g)));const offRun=api.onRunning(ids=>setRunning(ids));return()=>{off();offRun();};},[reload,fail]);
   useEffect(()=>{
     // Reassocia cada efeito à promessa em voo: mudança na biblioteca não pode perder a arte.
@@ -160,9 +165,9 @@ function App(){
   },[games]);
   const icons=useMemo(()=>Object.fromEntries(games.map(g=>[g.id,exeIcons[g.id+'|'+g.exe]]).filter(([,src])=>src)),[games,exeIcons]);
   const choose=useCallback((id)=>{if(!id)return;setSelected(id);sound('move',enabled);},[enabled]);
-  const jump=useCallback(delta=>{const all=gamesRef.current;const old=stateRef.current.selected;const n=all.findIndex(g=>g.id===old);if(all.length){const next=all[(Math.max(0,n)+delta+all.length)%all.length];setSelected(next.id);sound('move',stateRef.current.enabled);}},[]);
+  const jump=useCallback(delta=>{const all=gamesRef.current.filter(g=>categoryOf(g)===stateRef.current.tab);const old=stateRef.current.selected;const n=all.findIndex(g=>g.id===old);if(all.length){const next=all[(Math.max(0,n)+delta+all.length)%all.length];setSelected(next.id);sound('move',stateRef.current.enabled);}},[]);
   const play=useCallback(async(id)=>{const target=id||stateRef.current.selected;if(!target)return;sound('select',stateRef.current.enabled);try{if(!api)return announce('Prévia: execução disponível no PortDeck instalado.');await api.play(target);const found=gamesRef.current.find(g=>g.id===target);announce('Iniciando '+(found?.name||'jogo')+'...');}catch(e){fail(e);}},[announce,fail]);
-  const add=useCallback(async()=>{if(!api)return announce('Execute o PortDeck para adicionar jogos.');try{const g=await api.add();if(g){await reload();setSelected(g.id);setEditing(g);}}catch(e){fail(e);}},[announce,reload,fail]);
+  const add=useCallback(async()=>{if(!api)return announce('Execute o PortDeck para adicionar jogos.');try{const g=await api.add();if(g){g.category=stateRef.current.tab;await api.update(g);await reload();setSelected(g.id);setEditing(g);}}catch(e){fail(e);}},[announce,reload,fail]);
   const openEditor=useCallback(id=>{const target=gamesRef.current.find(g=>g.id===id);if(target){setEditing(target);sound('select',stateRef.current.enabled);}},[]);
   const openMenu=useCallback((id,x,y)=>{
     if(!gamesRef.current.some(g=>g.id===id))return;
@@ -200,12 +205,13 @@ function App(){
     const s=stateRef.current;
     if(s.view==='library'){setView('detail');return;}
     if(s.view==='detail'){s.play();return;}
+    if(s.focusZone==='games'&&!s.selected){document.querySelector('[data-console-add]')?.click();return;}
     if(s.focusZone==='games'){setFocusZone('actions');setActionIndex(0);sound('select',s.enabled);return;}
     if(s.actionIndex===0)s.play();
     else if(s.actionIndex===1)s.openEditor(s.selected);
     else document.querySelector('.console-actions .console-btn:nth-child(3)')?.click();
   },[]);
-  stateRef.current={selected:focusedId,enabled,view,editing,play,jump,openEditor,openMenu,notify:announce,muted,intro,introReady,menu,closing,focusZone,actionIndex,activate};
+  stateRef.current={tab,changeTab,selected:focusedId,enabled,view,editing,play,jump,openEditor,openMenu,notify:announce,muted,intro,introReady,menu,closing,focusZone,actionIndex,activate};
   useEffect(()=>{const t=setTimeout(()=>{setIntroReady(true);},reduced?180:1150);return()=>clearTimeout(t);},[reduced]);
   useEffect(()=>{const el=document.querySelector('[data-selected="true"]');if(el)el.scrollIntoView({behavior:reduced?'instant':'smooth',inline:'center',block:'nearest'});},[focusedId,view,reduced]);
   useEffect(()=>{
@@ -287,10 +293,11 @@ function App(){
           const now=performance.now(),canRepeat=['left','right','up','down'].includes(cmd);
           if(cmd&&(cmd!==prior||(canRepeat&&now-stamp>240))){
             stamp=now;
-            if(st.focusZone==='header'&&!['home','home-combo'].includes(cmd)){if(cmd==='accept')document.querySelector('.player-chip')?.click();else if(cmd==='down'||cmd==='back')setFocusZone('games');}
+            if(centerCommand(cmd)){}
+            else if(['areaLeft','areaRight'].includes(cmd)&&!st.editing&&!st.menu&&!st.closing){st.changeTab(st.tab==='games'?'media':'games');}
+            else if(st.focusZone==='header'&&!['home','home-combo'].includes(cmd)){if(cmd==='accept')document.querySelector('.player-chip')?.click();else if(cmd==='down'||cmd==='back')setFocusZone('games');}
             else if((cmd==='home-combo'||cmd==='home')&&st.closing?.phase!=='closing'){
-              setMenu(null);setEditing(null);setClosing(null);setView('home');setFocusZone('games');
-              st.notify('Início · PortDeck');sound('select',st.enabled);
+              /* Home não descarta formulários nem confirma encerramentos. */
             }
             else if(st.closing){
               if(cmd==='back'&&st.closing.phase!=='closing')setClosing(null);
@@ -306,7 +313,7 @@ function App(){
               }
               else if(cmd==='accept')document.activeElement?.matches?.('.game-context-menu [role="menuitem"]')&&document.activeElement.click();
             }
-            else if(st.editing){if(cmd==='back')setEditing(null);}
+            else if(st.editing){dialogCommand(cmd,'.editor');}
             else if(cmd==='menu'&&st.view==='home'&&st.selected){
               const tile=document.querySelector('.console-tile.active');
               const rect=tile?.getBoundingClientRect();st.openMenu(st.selected,rect?.left||180,(rect?.bottom||120)+8);
@@ -345,7 +352,7 @@ function App(){
   return <div className="shell">
     <AnimatePresence mode="sync"><motion.div key={game?.id||'empty'} className={'wallpaper'+(!currentArt?' no-art':'')} initial={{opacity:0,scale:1.025}} animate={{opacity:1,scale:1}} exit={{opacity:0,transition:{duration:reduced?.01:.35}}} transition={{duration:reduced?.01:.5}} style={currentArt?{backgroundImage:'url("'+currentArt+'")'}:{}}/></AnimatePresence><div className="vignette"/><div className="ambient-noise"/>
     <div className="layout">
-      <header className="header"><button className="branding" onClick={()=>reveal('home')}><BrandMark/><span className="wordmark">PORT<span>DECK</span></span><em>PULSE</em></button><nav><button className={view==='home'?'on':''} onClick={()=>reveal('home')}>Início</button><button className={view==='library'?'on':''} onClick={()=>reveal('library')}>Biblioteca</button></nav><div className="head-right">
+      <header className="header"><button className="branding" onClick={()=>reveal('home')}><BrandMark/><span className="wordmark">PORT<span>DECK</span></span><em>PULSE</em></button><LibraryTabs value={tab} onChange={changeTab}/><div className="head-right">
         <span className={'pad-status pad-'+controller.kind}><Icon name="controller" size={19}/>{controller.label}</span>
         <PlayerProfiles/><time className="console-clock">{clock.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</time>
         <button className="head-icon" title={muted?'Ativar efeitos sonoros':'Silenciar efeitos sonoros'} onClick={handleSound}><Icon name={muted?'mute':'volume'}/></button>
@@ -355,7 +362,7 @@ function App(){
       <main>
         <AnimatePresence mode="wait">
           {view==='home'&&<motion.div key="home" className="home-console-view" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} transition={{duration:reduced?.01:.22}}>
-            <ConsoleHome games={games} game={game} art={art} icons={icons} selected={focusedId} zone={focusZone} actionIndex={actionIndex} onZone={setFocusZone} onAction={setActionIndex} onSelect={choose} onPlay={()=>play(focusedId)} onConfigure={()=>openEditor(focusedId)} onDetails={()=>setView('detail')} onAdd={add} onContext={openMenu} onMenu={openMenu}/>
+            <ConsoleHome category={tab} games={visible} game={game} art={art} icons={icons} selected={focusedId} zone={focusZone} actionIndex={actionIndex} onZone={setFocusZone} onAction={setActionIndex} onSelect={choose} onPlay={()=>play(focusedId)} onConfigure={()=>openEditor(focusedId)} onDetails={()=>setView('detail')} onAdd={add} onContext={openMenu} onMenu={openMenu}/>
           </motion.div>}
           {view==='detail'&&<motion.div key="detail" className="detail" initial={{opacity:0,x:70}} animate={{opacity:1,x:0}} exit={{opacity:0,x:-40}} transition={spring}>
             <button className="breadcrumb" onClick={()=>reveal('home')}><Icon name="back"/> Voltar à biblioteca</button>
@@ -380,6 +387,7 @@ function App(){
     <AnimatePresence>{closing&&closingGame&&<CloseGameOverlay key={closing.id} game={closingGame} phase={closing.phase} onCancel={()=>setClosing(null)} onRequest={()=>requestClose(false)} onForce={()=>requestClose(true)}/>}</AnimatePresence>
     <AnimatePresence>{editing&&<EditModal key={editing.id} game={editing} art={art} onClose={()=>setEditing(null)} onSave={save} onDelete={remove} onLaunch={launch} onBrowse={()=>api?.chooseExecutable?.()} onImage={kind=>api?.importArt?.(editing.id,kind)}/>}</AnimatePresence>
     <AnimatePresence>{toast&&<motion.div className="toast" initial={{opacity:0,y:25}} animate={{opacity:1,y:0}} exit={{opacity:0,y:16}} role="status">{toast}</motion.div>}</AnimatePresence>
+    <ControlCenter enabled={!intro} game={games.find(g=>running.includes(g.id))} onGame={g=>{setTab(categoryOf(g));setSelected(g.id);setView('detail');}} muted={muted} onSound={handleSound} onExit={()=>api?.closeWindow?.()} onRestore={focusShelf}/>
     <IntroScreen open={intro} ready={introReady} onEnter={enterConsole} controller={controller} muted={muted}/>
   </div>;
 }

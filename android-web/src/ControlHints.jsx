@@ -15,6 +15,6 @@ export function ButtonGlyph({layout,action}){
  return <span className={'pd-glyph pd-glyph-'+layout+' pd-glyph-'+action} aria-label={k[action]}>{k[action]}</span>;
 }
 export default function ControlHints({layout}){
- if(layout==='touch')return <div className="ad-hint-set ad-hint-touch"><span><ButtonGlyph layout={layout} action="accept"/> Toque: selecionar</span><span><ButtonGlyph layout={layout} action="options"/> Segurar: opções</span><span><ButtonGlyph layout={layout} action="home"/> Início</span></div>;
- return <div className="ad-hint-set"><span><ButtonGlyph layout={layout} action="accept"/> Selecionar</span><span><ButtonGlyph layout={layout} action="back"/> Voltar</span><span><ButtonGlyph layout={layout} action="options"/> Opções</span><span><span className="pd-combo">Start + Select</span> Início</span></div>;
+ if(layout==='touch')return <div className="ad-hint-set ad-hint-touch"><span><ButtonGlyph layout={layout} action="accept"/> Toque: selecionar</span><span><ButtonGlyph layout={layout} action="options"/> Segurar: opções</span><span><ButtonGlyph layout={layout} action="home"/> Central</span></div>;
+ return <div className="ad-hint-set"><span><ButtonGlyph layout={layout} action="accept"/> Selecionar</span><span><ButtonGlyph layout={layout} action="back"/> Voltar</span><span><ButtonGlyph layout={layout} action="options"/> Opções</span><span><span className="pd-combo">Start + Select</span> Central</span></div>;
 }

@@ -61,7 +61,9 @@ Os testes de navegador usam `dist/` já compilado para o Windows: rode `npm run 
 - Workflows: `windows-build.yml` (instalador e portátil), `android-build.yml` (APK padrão + APK com notificações), `ui-check.yml` (unitários + build + Playwright).
 - O Java nativo só é compilado no CI (não há Android SDK local): depois de mexer em `android-source/`, confira o workflow Android antes de dizer que está pronto.
 
-## Estado em 0.8 (out/2026)
-Pronto: entrada estilo PS4 (validada no tablet), menu ao lado da capa (validado no tablet), "Alternar usuário" estilo PS4 sem abrir ao iniciar, perfis com foto, início estilo PS5 com arte em tela cheia, tela cheia imersiva no Android, ícone PD, ícone do `.exe` como capa reserva, pop-ups de notificação (APK opcional), assinatura fixa do APK.
-Ainda não validado no aparelho: instalar por cima a partir da 0.8, tela "Alternar usuário" com controle físico, pop-ups recebendo notificações reais e o toque no aviso abrindo o app (Android 14+).
-Ideias pedidas pelo dono: central de controle estilo botão PS; fileira de Mídia/Apps; capas automáticas por nome (v0.3 do roadmap, exige API licenciada e confirmação do usuário).
+## Estado em 0.9 (out/2026)
+Pronto: tudo da 0.8, central inferior Home/Start+Select/toque; Jogos/Mídia com L1/R1 e categoria opcional preservada; foco de diálogos e capas ajustado; versionCode 9000, mesma chave fixa e appId; CI verifica assinatura/metadados/Safe das duas variantes. Registro: `docs/PORTDECK_0.9.md`, capturas em `docs/screenshots/0.9/`.
+Validação: 18 testes unitários e 18 de navegador. APIs Android simuladas no navegador; build/assinatura reais conferidos pelo workflow Android.
+Limites: Android mostra último app aberto, não detecta processo de jogo; Home depende do driver e do primeiro plano. Windows mostra processo acompanhado e abre detalhes; bateria indisponível sem API. Som controla efeitos do PortDeck.
+Pendente no aparelho: atualizar 0.8 → 0.9 mantendo dados, controle físico e notificações reais. Os prints novos citados no pedido não chegaram; não afirmar que foram corrigidos.
+Ideia futura: capas automáticas por nome (exige API licenciada e confirmação do usuário).

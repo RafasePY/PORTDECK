@@ -1,4 +1,4 @@
-@import url(''); /* no external fonts: works offline */
+/* Fontes locais: funciona offline. */
 :root{font-family:Inter,'Segoe UI Variable','Segoe UI',Arial,sans-serif;color:#f4f7ff;background:#070914;font-synthesis:none}
 *{box-sizing:border-box}html,body,#root{margin:0;width:100%;height:100%;overflow:hidden}button,input{font:inherit}button{cursor:pointer}button:disabled{opacity:.5}button:focus-visible,input:focus-visible{outline:3px solid #73ffe0;outline-offset:3px}button{color:inherit}[hidden]{display:none!important}
 .shell{height:100dvh;min-height:590px;isolation:isolate;position:relative;overflow:hidden;background:#080b18}

@@ -26,7 +26,7 @@ export default function PlayerProfiles(){
  const focused=data.profiles.find(p=>p.id===focusId)||active;
  useEffect(()=>{document.documentElement.style.setProperty('--dashboard-accent',THEMES[active.theme].color);},[active.theme]);
  const commit=value=>{try{const saved=writeProfiles(localStorage,value);setData(saved);setError('');return true;}catch{setError('Não foi possível salvar. Verifique o espaço disponível e tente novamente.');return false;}};
- const close=()=>{setOpen(false);setDraft(null);setError('');setFocusId(null);};
+ const close=()=>{setOpen(false);setDraft(null);setError('');setFocusId(null);requestAnimationFrame(()=>document.querySelector('.console-tile.active,[data-console-add]')?.focus({preventScroll:true}));};
  const show=()=>{try{setData(readProfiles(localStorage));setError('');}catch{setError('Os perfis salvos não puderam ser lidos. Nenhum dado foi substituído.');}setOpen(true);};
  useEffect(()=>{
  if(!open)return;
@@ -75,7 +75,7 @@ export default function PlayerProfiles(){
  <ul><li>A biblioteca, as horas e os saves dos jogos continuam compartilhados.</li><li>Cada usuário guarda nome, foto e a cor do PortDeck neste dispositivo.</li></ul>
  <div className="ps-users-row">
  <button className="ps-user ps-user-new" disabled={data.profiles.length>=12} aria-label="Novo usuário" onFocus={()=>setFocusId(null)} onClick={()=>setDraft({id:crypto.randomUUID(),name:'',avatar:AVATARS[data.profiles.length%AVATARS.length],theme:'ocean'})}><span className="ps-user-art" aria-hidden="true">＋</span><strong>Novo usuário</strong></button>
- {data.profiles.map(p=><button key={p.id} className="player-select ps-user" aria-pressed={p.id===active.id} aria-label={p.name+(p.id===active.id?', perfil atual':'')} onFocus={()=>setFocusId(p.id)} onClick={()=>{if(commit({...data,activeId:p.id}))close();}}>
+ {data.profiles.map(p=><button key={p.id} className="player-select ps-user" aria-pressed={p.id===active.id} aria-label={p.name+(p.id===active.id?', perfil atual':'')} onFocus={e=>{setFocusId(p.id);e.currentTarget.scrollIntoView({block:"nearest",inline:"nearest"});}} onClick={()=>{if(commit({...data,activeId:p.id}))close();}}>
  <span className="ps-user-art" style={{background:THEMES[p.theme].color}} aria-hidden="true">{p.photo?<img src={p.photo} alt=""/>:p.avatar}</span><strong>{p.name}</strong>{p.id===active.id&&<small>Perfil atual</small>}</button>)}
  </div>
  </div>

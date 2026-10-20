@@ -34,6 +34,11 @@ if(!gradle.includes('portdeck-signing.keystore')){
  gradle=gradle.replace(/^android\s*\{/m,m=>m+signing);
  fs.writeFileSync(gradlePath,gradle);
 }
+// Versão monotônica e idempotente; a assinatura e o applicationId permanecem iguais.
+const version=require('../package.json').version;
+const [major,minor,patch]=version.split('.').map(Number);
+gradle=gradle.replace(/versionCode\s+\d+/, 'versionCode '+(major*1000000+minor*1000+patch)).replace(/versionName\s+"[^"]+"/, 'versionName "'+version+'"');
+fs.writeFileSync(gradlePath,gradle);
 // Ícone PortDeck no lugar do ícone padrão do Capacitor.
 fs.cpSync(path.join('android-source','res'),path.join(base,'res'),{recursive:true});
 console.log('PortDeck Android: inicialização de jogos e ícone configurados'+(withNotifications?', com pop-ups de notificação':', sem leitor de notificações')+'; sem acesso à tela inicial do Android.');

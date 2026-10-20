@@ -1,7 +1,7 @@
 name: Android APK
 on:
   push:
-    branches: ["feature/android-tablet-v0.1", "feature/android-v0.1.1-shortcuts-nintendo", "feature/android-v0.1.2-home-shortcuts-battery", "feature/android-safe-no-home", "feature/dashboard-profiles-v0.5", "feature/portal-identity-v0.6", "ccr-a064814d-udfijf"]
+    branches: ["feature/android-tablet-v0.1", "feature/android-v0.1.1-shortcuts-nintendo", "feature/android-v0.1.2-home-shortcuts-battery", "feature/android-safe-no-home", "feature/dashboard-profiles-v0.5", "feature/portal-identity-v0.6", "ccr-a064814d-udfijf", "feature/control-center-v0.9"]
     paths-ignore: ["**/*.md"]
   pull_request:
     branches: ["feature/pulse-v0.4.2-identity-controls"]
@@ -34,10 +34,12 @@ jobs:
         run: npx cap sync android
       - name: Compile Android APK
         run: cd android && chmod +x gradlew && ./gradlew assembleDebug --no-daemon
+      - name: Verify upgrade signature and Safe manifest
+        run: node scripts/verify-apk.cjs android/app/build/outputs/apk/debug/app-debug.apk
       - name: Upload Android APK
         uses: actions/upload-artifact@v4
         with:
-          name: PortDeck-Android-Safe-v0.8-APK
+          name: PortDeck-Android-Safe-v0.9-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 30
       - name: Add optional notification reader
@@ -46,9 +48,13 @@ jobs:
         run: node scripts/prepare-android.cjs
       - name: Compile Android APK with notification pop-ups
         run: cd android && ./gradlew assembleDebug --no-daemon
+      - name: Verify optional APK signature and manifest
+        env:
+          PORTDECK_NOTIFICATIONS: "1"
+        run: node scripts/verify-apk.cjs android/app/build/outputs/apk/debug/app-debug.apk
       - name: Upload Android APK with notification pop-ups
         uses: actions/upload-artifact@v4
         with:
-          name: PortDeck-Android-Safe-v0.8-Notificacoes-APK
+          name: PortDeck-Android-Safe-v0.9-Notificacoes-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 30

@@ -28,6 +28,7 @@ function splitArgs(line) {
 
 function normalizeGame(g) {
   return {
+    category: g.category === 'media' ? 'media' : 'games',
     id: clean(g.id) || crypto.randomUUID(),
     name: clean(g.name || g.title) || 'Jogo sem título',
     exe: clean(g.exe),

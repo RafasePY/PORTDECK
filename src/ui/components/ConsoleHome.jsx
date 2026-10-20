@@ -20,7 +20,7 @@ function GameTile({game,selected,src,icon,onSelect,onContext}){
     <span className="console-tile-caption">{game.name}</span>
   </motion.button>;
 }
-export default function ConsoleHome({games,game,art,icons={},selected,onSelect,onPlay,onConfigure,onDetails,onAdd,onContext,onMenu,isAddSelected=false,onAddFocus,estimatedTime=false,zone='games',actionIndex=0,onZone,onAction}){
+export default function ConsoleHome({category="games",games,game,art,icons={},selected,onSelect,onPlay,onConfigure,onDetails,onAdd,onContext,onMenu,isAddSelected=false,onAddFocus,estimatedTime=false,zone='games',actionIndex=0,onZone,onAction}){
   const shelf=useRef(null),reduced=useReducedMotion();
   useEffect(()=>{
     const item=shelf.current?.querySelector(isAddSelected?'[data-console-add="true"]':'[data-console-tile].active');
@@ -42,12 +42,12 @@ export default function ConsoleHome({games,game,art,icons={},selected,onSelect,o
       <AnimatePresence mode="wait">
         <motion.div className="console-story" key={game?.id||'empty'} initial={{opacity:0,y:reduced?0:10}} animate={{opacity:1,y:0}} exit={{opacity:0}} transition={{duration:reduced?0:.18}}>
           <div className="console-eyebrow"><span className="console-led"/> {game?'SUA BIBLIOTECA':'PORTDECK PULSE'}</div>
-          {game?(logo?<img className="console-game-logo" src={logo} alt={game.name}/>:<h1>{game.name}</h1>):<h1>Seu próximo jogo começa aqui.</h1>}
-          {description?<p className="console-description">{description}</p>:!game?<p className="console-description">Adicione seu primeiro jogo para começar.</p>:null}
+          {game?(logo?<img className="console-game-logo" src={logo} alt={game.name}/>:<h1>{game.name}</h1>):<h1>{category==='media'?'Seu entretenimento, aqui.':'Seu próximo jogo começa aqui.'}</h1>}
+          {description?<p className="console-description">{description}</p>:!game?<p className="console-description">Adicione um aplicativo para começar.</p>:null}
           {game&&<div className="console-metadata"><span>◷ {duration(game.playedSeconds)} {estimatedTime?'estimados':'jogadas'}</span><span>▦ Última sessão: {date(game.lastPlayed)}</span></div>}
           <div className="console-actions">
             <button className={'console-btn console-play'+(zone==='actions'&&actionIndex===0?' console-focused':'')} onFocus={()=>{onZone('actions');onAction(0);}} onClick={()=>act(0,game?onPlay:onAdd)}>
-              <span className="console-triangle">▶</span>{game?'Jogar':'Adicionar jogo'}
+              <span className="console-triangle">▶</span>{game?(category==='media'?'Abrir':'Jogar'):(category==='media'?'Adicionar mídia':'Adicionar jogo')}
             </button>
             {game&&<>
               <button className={'console-btn console-secondary'+(zone==='actions'&&actionIndex===1?' console-focused':'')} onFocus={()=>{onZone('actions');onAction(1);}} onClick={()=>act(1,onConfigure)}>⚙ Configurar</button>
@@ -57,6 +57,6 @@ export default function ConsoleHome({games,game,art,icons={},selected,onSelect,o
         </motion.div>
       </AnimatePresence>
     </div>
-    <div className="console-hint">← → Escolher jogo　 ·　 ↓ Ações　 ·　 Start Opções</div>
+    <div className="console-hint">L1 / R1 Abas　 ·　 ← → Escolher　 ·　 ↓ Ações　 ·　 Start Opções</div>
   </div>;
 }

@@ -2,3 +2,8 @@ node_modules/
 dist/
 *.log
 .env
+
+dist-android/
+android/
+test-results/
+playwright-report/

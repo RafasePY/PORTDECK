@@ -46,3 +46,11 @@ test('stores cinematic banner and logo paths without changing existing library',
     const other=new Library(dir).list()[0];assert.equal(other.banner,'E:\\art\\banner.png');assert.equal(other.logo,'E:\\art\\logo.webp');
   }finally{fs.rmSync(dir,{recursive:true,force:true});}
 });
+
+test('legacy library defaults to games; moving to media retains play time, artwork and launch settings',()=>{
+ const {normalizeGame}=require('../src/backend/library.cjs');
+ const legacy={id:'stable',name:'Player',exe:'C:/Player.exe',directExe:'C:/Direct.exe',args:'--full',playedSeconds:4321,cover:'cover.png',banner:'banner.png',logo:'logo.png',lastPlayed:'2026-10-20',favorite:true};
+ assert.deepEqual(normalizeGame({...legacy,category:'media'}),{...normalizeGame(legacy),category:'media'});assert.equal(normalizeGame(legacy).category,'games');
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'pd-category-'));
+ try{const exe=path.join(dir,'game.exe');fs.writeFileSync(exe,'demo');const db=new Library(dir),g=db.add(exe);db.update({...g,category:'media',playedSeconds:4321});const saved=new Library(dir).list()[0];assert.equal(saved.category,'media');assert.equal(saved.playedSeconds,4321);assert.equal(saved.id,g.id);}finally{fs.rmSync(dir,{recursive:true,force:true});}
+});
