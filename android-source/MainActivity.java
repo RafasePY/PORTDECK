@@ -1,4 +1,4 @@
-package com.portdeck.pulse.beta;
+package com.portdeck.pulse.preview;
 import android.os.Bundle;
 import android.view.View;
 import com.getcapacitor.BridgeActivity;

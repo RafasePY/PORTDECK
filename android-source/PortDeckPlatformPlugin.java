@@ -1,4 +1,4 @@
-package com.portdeck.pulse.beta;
+package com.portdeck.pulse.preview;
 
 import android.app.Activity;
 import android.app.role.RoleManager;
