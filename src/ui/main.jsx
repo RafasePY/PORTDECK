@@ -113,9 +113,11 @@ function App(){
   const enabled=!muted;
   const controller=identifyController(pad);
   useEffect(()=>{if(!api?.onHome)return;return api.onHome(()=>{setMenu(null);setEditing(null);setView('home');setFocusZone('games');announce('PortDeck · Início (Start + Select)');});},[]);
-  // Depois das boas-vindas o foco vai para a fileira de jogos, não para o botão do perfil no cabeçalho.
+  // Depois da entrada o foco vai para a fileira de jogos.
   const focusShelf=useCallback(()=>{setFocusZone('games');requestAnimationFrame(()=>document.querySelector('.console-tile.active,[data-console-add]')?.focus({preventScroll:true}));},[]);
   const enterConsole=useCallback(()=>{if(!stateRef.current.introReady)return;setIntro(false);},[]);
+  // Vale para toque, teclado e controle: todos os caminhos de saída da entrada passam por aqui.
+  useEffect(()=>{if(!intro)focusShelf();},[intro,focusShelf]);
   useEffect(()=>{const timer=setInterval(()=>setClock(new Date()),30000);return()=>clearInterval(timer);},[]);
   const announce=useCallback(message=>{setToast(message);clearTimeout(toastTimeout.current);toastTimeout.current=setTimeout(()=>setToast(''),4200);},[]);
   const fail=useCallback(e=>announce('⚠ '+(e?.message||String(e))),[announce]);
@@ -345,7 +347,7 @@ function App(){
     <div className="layout">
       <header className="header"><button className="branding" onClick={()=>reveal('home')}><BrandMark/><span className="wordmark">PORT<span>DECK</span></span><em>PULSE</em></button><nav><button className={view==='home'?'on':''} onClick={()=>reveal('home')}>Início</button><button className={view==='library'?'on':''} onClick={()=>reveal('library')}>Biblioteca</button></nav><div className="head-right">
         <span className={'pad-status pad-'+controller.kind}><Icon name="controller" size={19}/>{controller.label}</span>
-        <PlayerProfiles startup={!intro} onWelcomeDone={focusShelf}/><time className="console-clock">{clock.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</time>
+        <PlayerProfiles/><time className="console-clock">{clock.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</time>
         <button className="head-icon" title={muted?'Ativar efeitos sonoros':'Silenciar efeitos sonoros'} onClick={handleSound}><Icon name={muted?'mute':'volume'}/></button>
         <button className="head-icon" title="Tela cheia (F11)" onClick={()=>api?.toggleFullscreen()}><Icon name="fullscreen"/></button>
         <button className="head-icon close-app" title="Sair do PortDeck" onClick={()=>api?.closeWindow?.()}><Icon name="power"/></button>

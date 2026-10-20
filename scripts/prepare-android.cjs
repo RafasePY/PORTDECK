@@ -24,6 +24,16 @@ if(withNotifications&&!manifest.includes('PortDeckNotificationService')){
  manifest=manifest.replace('</application>',service+'\n    </application>');
 }
 fs.writeFileSync(manifestPath,manifest);
+// Assinatura fixa: sem ela cada build do CI usa uma chave de debug nova e o Android recusa instalar por cima.
+const gradlePath=path.join(root,'app/build.gradle');
+if(!fs.existsSync(gradlePath))throw Error('android/app/build.gradle não encontrado; ajuste a assinatura manualmente.');
+let gradle=fs.readFileSync(gradlePath,'utf8');
+if(!gradle.includes('portdeck-signing.keystore')){
+ const signing="\n    signingConfigs {\n        debug {\n            storeFile file('../../android-source/portdeck-signing.keystore')\n            storePassword 'portdeck'\n            keyAlias 'portdeck'\n            keyPassword 'portdeck'\n        }\n    }";
+ if(!/^android\s*\{/m.test(gradle))throw Error('Bloco android { } não encontrado em app/build.gradle.');
+ gradle=gradle.replace(/^android\s*\{/m,m=>m+signing);
+ fs.writeFileSync(gradlePath,gradle);
+}
 // Ícone PortDeck no lugar do ícone padrão do Capacitor.
 fs.cpSync(path.join('android-source','res'),path.join(base,'res'),{recursive:true});
 console.log('PortDeck Android: inicialização de jogos e ícone configurados'+(withNotifications?', com pop-ups de notificação':', sem leitor de notificações')+'; sem acesso à tela inicial do Android.');

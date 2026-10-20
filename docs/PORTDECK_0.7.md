@@ -13,3 +13,10 @@ Base: PortDeck 0.6 / PR #13. Windows e Android Safe.
 - Dois APKs: o Play Protect (proteção contra fraude, ativa no Brasil) bloqueia sem opção de continuar a instalação, fora da loja, de apps que declaram leitor de notificações. Por isso o APK padrão `PortDeck-Android-Safe-v0.7-APK` vem sem o leitor (o sininho some) e instala normalmente; `PortDeck-Android-Safe-v0.7-Notificacoes-APK` traz os pop-ups e só instala via `adb install` ou com a verificação do Play Protect desativada durante a instalação. Os dois usam o mesmo appId e os mesmos dados.
 - Entrada no estilo do PS4: fundo azul com feixes de luz, marca PortDeck no canto superior esquerdo, "Bem-vindo de volta ao PortDeck" e "Pressione A para usar o controle" (Enter no teclado, toque no tablet). A tela espera o jogador; não avança sozinha. Substitui a abertura animada "Portal" da 0.6.
 - Menu de opções do jogo no estilo do PS5: abre colado ao lado da capa selecionada (ou no ponto do clique, fora da fileira), sem escurecer nem desfocar a tela; item focado com contorno claro. Windows e Android usam o mesmo componente. No Windows saiu o item duplicado "Gerenciar conteúdo" (abria a mesma pasta).
+
+## Telas no tablet do dono (Samsung, 20/10/2026)
+| Entrada estilo PS4 | Menu ao lado da capa |
+|---|---|
+| ![Entrada](screenshots/0.7/tablet-entrada-ps4.jpg) | ![Menu](screenshots/0.7/tablet-menu-ao-lado-da-capa.jpg) |
+
+Problemas relatados depois da 0.7 e resolvidos na [0.8](PORTDECK_0.8.md): o APK não instalava por cima (assinatura aleatória do CI) e a tela "Quem vai jogar?" abria sozinha ao iniciar.

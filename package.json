@@ -1,6 +1,6 @@
 {
   "name": "portdeck",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "PortDeck Pulse — console game library for Windows",
   "main": "src/main.cjs",
   "author": "PortDeck contributors",

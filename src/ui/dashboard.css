@@ -150,3 +150,30 @@
 .shell .game-context-menu [role="menuitem"]{display:block;width:calc(100% - 16px);margin:2px 8px;min-height:50px;padding:13px 18px;font-size:17px;font-weight:400;color:#e9eef5;background:transparent;border:1px solid transparent;border-radius:4px;text-align:left}
 .shell .game-context-menu [role="menuitem"]:hover,.shell .game-context-menu [role="menuitem"]:focus{outline:0;background:#ffffff1c;border-color:#ffffffc0;box-shadow:0 0 18px #9ad9ff22}
 .shell .game-context-menu [role="menuitem"].game-menu-danger{color:#ffb4bc}
+/* Alternar usuário no estilo do PS4: tela azul inteira, cartões grandes lado a lado, rodapé com os botões. */
+.player-shade.ps-users-shade{padding:0;background:radial-gradient(ellipse at 70% 0%,#1d6fe0 0%,transparent 55%),linear-gradient(180deg,#0a4fc4 0%,#063a9e 45%,#021f63 100%);backdrop-filter:none}
+.ps-users-shade .player-panel{background:#0b2f7ae6;border-color:#ffffff30}
+.ps-users{position:absolute;inset:0;display:flex;flex-direction:column;color:#fff}
+.ps-users-top{padding:clamp(22px,5vh,48px) clamp(24px,6vw,110px) 18px;border-bottom:1px solid #ffffff45;margin:0 clamp(12px,3vw,48px)}
+.ps-users-top h2{margin:0;font-weight:300;font-size:clamp(26px,3.2vw,44px);letter-spacing:.005em}
+.ps-users-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:20px clamp(16px,4vw,60px);min-height:0}
+.ps-users-body h3{margin:0;font-weight:400;font-size:clamp(18px,1.8vw,24px)}
+.ps-users-body ul{margin:4px 0 26px;padding:0;list-style:none;font-size:clamp(13px,1.2vw,16px);color:#dce8ff;text-align:left}
+.ps-users-body li:before{content:'· '}
+.ps-users-row{display:flex;gap:clamp(12px,1.6vw,22px);max-width:100%;overflow-x:auto;padding:10px;scrollbar-width:none}
+.ps-user{flex:none;display:flex;flex-direction:column;align-items:stretch;width:clamp(140px,13vw,190px);min-height:clamp(200px,19vw,260px);padding:0;background:#ffffff1f;border:2px solid transparent;border-radius:2px;color:#fff;text-align:left;font:inherit;overflow:hidden}
+.ps-user-art{display:grid;place-items:center;aspect-ratio:1;width:100%;font-size:clamp(56px,6vw,84px);color:#fff;overflow:hidden}
+.ps-user-art img{width:100%;height:100%;object-fit:cover;display:block}
+.ps-user-new .ps-user-art{background:transparent;font-size:clamp(64px,7vw,96px);font-weight:200}
+.ps-user strong{padding:12px 14px 2px;font-size:clamp(15px,1.3vw,18px);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ps-user small{padding:0 14px 12px;font-size:12px;color:#dbe8ff}
+.ps-user:hover{background:#ffffff2c}
+.ps-user:focus-visible,.ps-user:focus{outline:0;border-color:#fff;background:#ffffff33;box-shadow:0 0 24px #a9d8ff55}
+.ps-user:disabled{opacity:.45}
+.ps-users-foot{display:flex;align-items:center;gap:clamp(16px,3vw,40px);padding:16px clamp(24px,6vw,110px) clamp(18px,4vh,36px);margin:0 clamp(12px,3vw,48px);border-top:1px solid #ffffff45;font-size:clamp(13px,1.2vw,16px)}
+.ps-users-foot button{display:flex;align-items:center;gap:8px;background:none;border:0;color:#fff;font:inherit;padding:8px 6px;border-radius:3px}
+.ps-users-foot button:focus-visible,.ps-users-foot button:hover{background:#ffffff22;outline:0}
+.ps-users-foot span{display:flex;align-items:center;gap:8px}
+.ps-users-foot kbd{display:inline-grid;place-items:center;min-width:24px;height:24px;padding:0 6px;border:1px solid #ffffffb0;border-radius:999px;font:inherit;font-size:12px}
+.ps-users .player-error{margin:12px auto 0;max-width:640px}
+.ps-users-foot .player-edit{font-size:inherit!important;padding:8px 6px;border:0}

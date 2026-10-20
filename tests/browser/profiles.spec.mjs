@@ -1,10 +1,17 @@
 import {test,expect} from '@playwright/test';
 // A abertura espera o jogador apertar um botão, como no PS4.
 const enter=async page=>{await page.locator('.ps-welcome[data-ready="true"]').waitFor({timeout:8000});await page.keyboard.press('Enter');};
-test('boot selects a player, imports and crops a photo, persists after restart',async({page})=>{
+// Troca de usuário só abre quando o jogador pede (tecla P, avatar ou ↑ + A).
+const openUsers=async page=>{await page.locator('.player-chip').click();await expect(page.getByRole('heading',{name:'Alternar usuário'})).toBeVisible();};
+const desktopLibrary=()=>{
+ const games=['Celeste','Hollow Knight','Doom 64'].map((name,i)=>({id:'g'+i,name,exe:'C:/Ports/'+i+'/play.exe',cover:'',banner:'',logo:'',playedSeconds:0,lastPlayed:new Date(Date.now()-i*86400000).toISOString()}));
+ const icon='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+ window.portdeck={list:async()=>games,running:async()=>[],onLibrary:()=>()=>{},onRunning:()=>()=>{},onHome:()=>()=>{},loadCover:async()=>'',icon:async id=>id==='g1'?icon:''};
+};
+test('user switcher edits a player, imports and crops a photo, persists after restart',async({page})=>{
  await page.goto('/');
  await enter(page);
- await expect(page.getByRole('heading',{name:'Quem vai jogar?'})).toBeVisible({timeout:12000});
+ await openUsers(page);
  await page.getByRole('button',{name:'Editar perfil de Jogador'}).click();
  await page.locator('.player-label input').fill('Carlos');
  const image=await page.evaluate(()=>{const c=document.createElement('canvas');c.width=320;c.height=240;const ctx=c.getContext('2d');ctx.fillStyle='#1674dc';ctx.fillRect(0,0,320,240);return c.toDataURL('image/png').split(',')[1];});
@@ -14,27 +21,35 @@ test('boot selects a player, imports and crops a photo, persists after restart',
  await expect(page.locator('.player-preview img')).toBeVisible();
  await page.getByRole('button',{name:'Salvar perfil',exact:true}).click();
  await page.locator('.player-select').filter({hasText:'Carlos'}).click();
+ await expect(page.locator('[data-player-dialog]')).toHaveCount(0);
  await expect(page.locator('.player-chip img')).toBeVisible();
  await page.reload();
  await enter(page);
- await expect(page.getByRole('heading',{name:'Quem vai jogar?'})).toBeVisible({timeout:12000});
+ await expect(page.locator('.player-chip img')).toBeVisible();
+ await openUsers(page);
  await expect(page.locator('.player-select img')).toBeVisible();
  await page.getByRole('button',{name:'Editar perfil de Carlos'}).click();
  await page.getByRole('button',{name:'Remover foto',exact:true}).click();
  await page.getByRole('button',{name:'Salvar perfil',exact:true}).click();
  await expect(page.locator('.player-select img')).toHaveCount(0);
 });
-test('reduced motion and keyboard escape remain usable',async({page})=>{
+test('user switcher looks like the PS4: new user card, current user focused, B cancels',async({page})=>{
  await page.emulateMedia({reducedMotion:'reduce'});
  await page.goto('/');
  await enter(page);
- await expect(page.getByRole('heading',{name:'Quem vai jogar?'})).toBeVisible({timeout:8000});
+ await page.keyboard.press('p');
+ await expect(page.getByRole('heading',{name:'Alternar usuário'})).toBeVisible();
+ await expect(page.getByRole('button',{name:'Novo usuário'})).toBeVisible();
+ await expect(page.locator('.player-select[aria-pressed="true"]')).toBeFocused();
+ await page.getByRole('button',{name:'Novo usuário'}).click();
+ await expect(page.getByRole('heading',{name:'Seu espaço. Seu estilo.'})).toBeVisible();
+ await page.keyboard.press('Escape');
+ await expect(page.getByRole('heading',{name:'Alternar usuário'})).toBeVisible();
  await page.keyboard.press('Escape');
  await expect(page.locator('[data-player-dialog]')).toHaveCount(0);
- await page.keyboard.press('p');
- await expect(page.locator('[data-player-dialog]')).toBeVisible();
 });
-test('welcome screen waits for the player like the PS4 and names the button',async({page})=>{
+test('welcome waits for the player like the PS4 and goes straight to the games, without asking who plays',async({page})=>{
+ await page.addInitScript(desktopLibrary);
  await page.goto('/');
  const welcome=page.locator('.ps-welcome');
  await expect(welcome.getByRole('heading',{name:'Bem-vindo de volta ao PortDeck'})).toBeVisible();
@@ -42,16 +57,33 @@ test('welcome screen waits for the player like the PS4 and names the button',asy
  await expect(welcome).toContainText('Pressione Enter para começar.');
  await page.waitForTimeout(5500);
  await expect(welcome).toBeVisible();
- await expect(page.locator('[data-player-dialog]')).toHaveCount(0);
  await page.keyboard.press('Enter');
- await expect(page.getByRole('heading',{name:'Quem vai jogar?'})).toBeVisible();
+ await expect(welcome).toHaveCount(0);
+ await expect(page.locator('.console-tile.active')).toBeFocused();
+ await page.waitForTimeout(800);
+ await expect(page.locator('[data-player-dialog]')).toHaveCount(0);
+});
+test('arrow keys move through games right after the welcome screen',async({page})=>{
+ await page.addInitScript(desktopLibrary);
+ await page.goto('/');
+ await enter(page);
+ await expect(page.locator('.console-tile.active')).toBeFocused();
+ const first=await page.locator('.console-tile.active').getAttribute('aria-label');
+ await page.keyboard.press('ArrowRight');
+ await expect(page.locator('.console-tile.active')).not.toHaveAttribute('aria-label',first);
+});
+test('games without a cover show the icon from their executable',async({page})=>{
+ await page.addInitScript(desktopLibrary);
+ await page.goto('/');
+ await enter(page);
+ await expect(page.locator('[data-console-tile="g1"] .console-tile-icon')).toHaveCount(1);
+ await expect(page.locator('[data-console-tile="g0"] .console-tile-icon')).toHaveCount(0);
+ await expect(page.locator('[data-console-tile="g0"] .console-tile-fallback strong')).toHaveText('CE');
 });
 test('game options open beside the selected cover without dimming the screen',async({page})=>{
  await page.addInitScript(desktopLibrary);
  await page.goto('/');
  await enter(page);
- await expect(page.getByRole('heading',{name:'Quem vai jogar?'})).toBeVisible();
- await page.keyboard.press('Escape');
  const tile=page.locator('.console-tile.active');
  await expect(tile).toBeFocused();
  await page.waitForTimeout(700);
@@ -66,30 +98,4 @@ test('game options open beside the selected cover without dimming the screen',as
  await expect(page.getByRole('menuitem',{name:'Jogar'})).toBeFocused();
  await page.keyboard.press('Escape');
  await expect(menu).toHaveCount(0);
-});
-const desktopLibrary=()=>{
- const games=['Celeste','Hollow Knight','Doom 64'].map((name,i)=>({id:'g'+i,name,exe:'C:/Ports/'+i+'/play.exe',cover:'',banner:'',logo:'',playedSeconds:0,lastPlayed:new Date(Date.now()-i*86400000).toISOString()}));
- const icon='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
- window.portdeck={list:async()=>games,running:async()=>[],onLibrary:()=>()=>{},onRunning:()=>()=>{},onHome:()=>()=>{},loadCover:async()=>'',icon:async id=>id==='g1'?icon:''};
-};
-test('arrow keys move through games right after the welcome profile closes',async({page})=>{
- await page.addInitScript(desktopLibrary);
- await page.goto('/');
- await enter(page);
- await expect(page.getByRole('heading',{name:'Quem vai jogar?'})).toBeVisible({timeout:12000});
- await page.keyboard.press('Escape');
- await expect(page.locator('.console-tile.active')).toBeFocused();
- const first=await page.locator('.console-tile.active').getAttribute('aria-label');
- await page.keyboard.press('ArrowRight');
- await expect(page.locator('.console-tile.active')).not.toHaveAttribute('aria-label',first);
-});
-test('games without a cover show the icon from their executable',async({page})=>{
- await page.addInitScript(desktopLibrary);
- await page.goto('/');
- await enter(page);
- await expect(page.getByRole('heading',{name:'Quem vai jogar?'})).toBeVisible({timeout:12000});
- await page.keyboard.press('Escape');
- await expect(page.locator('[data-console-tile="g1"] .console-tile-icon')).toHaveCount(1);
- await expect(page.locator('[data-console-tile="g0"] .console-tile-icon')).toHaveCount(0);
- await expect(page.locator('[data-console-tile="g0"] .console-tile-fallback strong')).toHaveText('CE');
 });
