@@ -26,3 +26,7 @@ O PortDeck também **não executa .exe**, não força o fechamento de apps Andro
 6. Se o botão Start+Select não abrir a Home durante o jogo, é limitação de foco do Android e não um erro de personalização de botões.
 
 **Beta não validada em hardware real.** A CI compila APK debug e executa os testes automatizados; é necessário validar na One UI.
+
+## Instalação sem perder a biblioteca existente
+
+Esta beta usa o pacote Android **`com.portdeck.pulse.beta`** e o nome **PortDeck Beta**. Ela instala lado a lado com a 0.1 original (`com.portdeck.pulse`) porque APKs debug gerados em runners diferentes geralmente possuem certificados distintos. Assim **não é preciso desinstalar a versão anterior** nem arriscar perder sua biblioteca já cadastrada. Os cadastros da 0.1 **não migram automaticamente** para a 0.1.1 Beta, pois cada app possui armazenamento privado diferente. Use Adicionar para testar o port novamente.

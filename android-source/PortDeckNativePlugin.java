@@ -1,4 +1,4 @@
-package com.portdeck.pulse;
+package com.portdeck.pulse.beta;
 
 import android.app.Activity;
 import android.content.ComponentName;
