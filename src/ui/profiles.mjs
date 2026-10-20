@@ -1,3 +1,4 @@
+import {validPhoto} from './avatar.mjs';
 export const PROFILE_KEY='portdeck-player-profiles-v1';
 export const THEMES={ocean:{name:'Oceano',color:'#1674dc'},violet:{name:'Violeta',color:'#7059c9'},midnight:{name:'Meia-noite',color:'#334565'},forest:{name:'Floresta',color:'#23796f'}};
 export const AVATARS=['◈','✦','◉','△','◎','⬡'];
@@ -6,6 +7,7 @@ export function normalize(value){
  if(value?.version!==1||!Array.isArray(value.profiles))throw Error('Formato de perfis inválido.');
  const seen=new Set();
  const profiles=value.profiles.slice(0,12).filter(p=>p&&typeof p.id==='string'&&p.id.length<100&&!seen.has(p.id)&&(seen.add(p.id),true)).map(p=>({
+ ...(validPhoto(p.photo)?{photo:p.photo}:{}),
  id:p.id,name:typeof p.name==='string'&&p.name.trim()?p.name.trim().slice(0,24):'Jogador',
  avatar:AVATARS.includes(p.avatar)?p.avatar:AVATARS[0],theme:Object.hasOwn(THEMES,p.theme)?p.theme:'ocean'
  }));
