@@ -1,57 +1,76 @@
 # PortDeck 🎮
 
-Launcher de ports Windows em tela cheia, inspirado na experiência de navegação por controle de consoles e do Steam Big Picture. Projeto comunitário independente, sem afiliação com a Valve ou outros fabricantes.
+Launcher de jogos em tela cheia com cara de console (inspirado no PS4/PS5 e no Steam Big Picture), para **Windows** (ports e jogos `.exe`) e **tablets Android** (apps e ports já instalados). Navegação por controle, teclado, mouse e toque. Projeto comunitário independente, sem afiliação com Sony, Valve ou outros fabricantes.
 
-## Situação
+> O PortDeck não emula, converte nem distribui jogos ou firmware. Ele só abre o que você já tem instalado.
 
-- **v0.1.2 (legado):** launcher Win32 original; já confirmado pelo usuário que abre seus jogos.
-- **v0.2 (interface renovada / experimental):** Electron + HTML/CSS/JS, biblioteca em tela cheia com animações, controles e migração automática da biblioteca nativa.
+## Versão atual: 0.7 — Modo console
 
-### Começar no Windows (desenvolvimento)
+- **Entrada estilo PS4:** fundo azul com feixes de luz, "Bem-vindo de volta ao PortDeck" e "Pressione A para usar o controle". Espera o jogador apertar um botão.
+- **Perfis locais** ("Quem vai jogar?") com nome, símbolo, cor e foto recortada.
+- **Início estilo PS5:** fileira de capas no topo, arte do jogo em tela cheia, logo do jogo, botões Jogar / Configurar / Mais opções.
+- **Menu de opções ao lado da capa**, como no PS5, sem escurecer a tela.
+- **Android em tela cheia de verdade:** barra de status, navegação e barra de tarefas da Samsung escondidas.
+- **Ícone próprio PD** no APK e no executável do Windows; no Windows, jogo sem capa mostra o ícone do próprio `.exe`.
+- **Notificações do tablet (opcional):** WhatsApp, Gmail etc. aparecem como aviso no canto da tela; tocar abre o app.
 
-1. Instale Node.js 22 LTS.
-2. `npm install`
-3. `npm start`
-4. `npm test` para testes do núcleo.
+Detalhes de cada versão em [`docs/`](docs) (ex.: [`docs/PORTDECK_0.7.md`](docs/PORTDECK_0.7.md)).
 
-### Baixar um instalador sem Node.js
+## Baixar e instalar
 
-Em **Actions → Windows installer → Run workflow**, aguarde o build e baixe `PortDeck-Windows-v0.2` em **Artifacts**. Dentro estarão o instalador `.exe` e o portátil `.exe` de Windows x64. Os instaladores ainda não são assinados digitalmente.
+Os instaladores são gerados automaticamente pelo GitHub Actions. Abra a aba **Actions**, escolha a execução mais recente da branch desejada e baixe em **Artifacts** (precisa estar logado no GitHub; os arquivos expiram em 30 dias).
 
-## Compatibilidade com v0.1.2
+### Windows
+Workflow **Windows installer** → artefato `PortDeck-Windows-v0.7.0`: instalador e versão portátil (`.exe`, x64). Ainda não são assinados digitalmente, então o Windows pode avisar na primeira execução.
 
-Na primeira execução, se `%APPDATA%\\PortDeck\\library.json` não existir, o PortDeck importa automaticamente `%APPDATA%\\PortDeck\\native_library.tsv` (UTF-16) preservando nomes, parâmetros, caminhos, capas, FPS de referência e tempo jogado. O arquivo antigo **não é modificado**. Essa migração ocorre uma única vez; versões 0.1.2 e 0.2 não sincronizam novas alterações automaticamente.
+### Android (tablet)
+Workflow **Android APK** gera dois APKs. Extraia o `.zip` e instale o `app-debug.apk` **por cima** da versão anterior (não desinstale: os jogos e perfis ficam no app).
 
-## Funcionamento atual
+| Artefato | Para quem | Instalação |
+|---|---|---|
+| `PortDeck-Android-Safe-v0.7-APK` | Todo mundo | Normal, pelo gerenciador de arquivos |
+| `PortDeck-Android-Safe-v0.7-Notificacoes-APK` | Quem quer os pop-ups de notificação | O **Play Protect bloqueia** (proteção contra fraude barra apps de fora da loja com leitor de notificações). Instale por `adb install -r app-debug.apk` ou desligue a verificação do Play Protect só durante a instalação e religue depois. Depois, no PortDeck: sininho → **Liberar acesso**. Se o Android disser "configuração restrita": Configurações → Apps → PortDeck Safe → ⋮ → **Permitir configurações restritas**. |
 
-- Selecionar um `.exe` e cadastrar o jogo
-- Jogar sem passar por configuração (argumentos e diretório salvos)
-- Configurador separado por jogo, quando definido
-- Tempo jogado acumulado (enquanto o processo monitorado estiver ativo)
-- Capas locais JPG, PNG ou WEBP
-- Controles reconhecidos pelo Gamepad API do Chromium; XInput/Steam Input podem ser necessários para controles específicos
-- Teclado: setas, Enter, Esc, F11
+Os dois usam o mesmo app (`com.portdeck.pulse.safe`) e os mesmos dados.
 
-> O PortDeck não emula, converte nem distribui jogos. Apenas abre executáveis locais. Jogos que iniciam outros processos podem demandar detecção avançada em versões futuras.
+## Controles
+
+| Ação | Controle | Teclado | Toque |
+|---|---|---|---|
+| Navegar | Direcional / analógico | Setas | Tocar na capa |
+| Confirmar | A | Enter | Tocar |
+| Voltar | B | Esc | — |
+| Opções do jogo | Start / Options | Tecla Menu, Shift+F10 ou botão direito | Segurar a capa |
+| Configurar jogo (Windows) | — | F2 | — |
+| Voltar ao início | Start + Select (Home quando disponível) | Ctrl+Shift+H | — |
+| Perfis | ↑ a partir da fileira, A | P | Tocar no avatar |
+
+No Windows, Start + Select também traz o PortDeck de volta com um jogo aberto (ponte XInput em segundo plano). No Android isso só funciona com o PortDeck em primeiro plano.
+
+## Desenvolvimento
+
+Requer Node.js 22.
+
+```
+npm install
+npm test                 # testes unitários (node --test)
+npm run build            # interface do Windows (Vite) → dist/
+npm start                # build + Electron
+npm run build:android    # interface do Android → dist-android/
+npx playwright test      # testes de navegador (Windows e Android); requer @playwright/test
+```
+
+APK local: `npm run build:android && npx cap add android && node scripts/prepare-android.cjs && npx cap sync android && cd android && ./gradlew assembleDebug` (use `PORTDECK_NOTIFICATIONS=1` no `prepare-android` para incluir o leitor de notificações).
+
+Para quem vai mexer no código (pessoas ou IAs): leia [`AGENTS.md`](AGENTS.md).
 
 ## Roadmap
 
-- **0.2** Visual em tela cheia, transições, foco do controle, biblioteca migrada
-- **0.3** Busca de capas com confirmação manual e provedores oficiais autorizados
-- **0.4** Perfis de controle, identificação mais precisa e remapeamento
-- **0.5** Biblioteca, favoritos, buscas e filtros avançados
-- **0.6** Melhor integração com Steam e retorno automático após sair do jogo
+- ✅ 0.1.2 launcher Win32 nativo · 0.2 Electron em tela cheia · 0.3 visual cinemático · 0.4 interface de console e menu de contexto · 0.4.2 identidade PULSE e Start+Select · Android 0.1 → Safe · 0.5 dashboard e perfis · 0.6 foto de perfil · 0.7 modo console
+- **Próximos:** central de controle (botão PS: jogo aberto, perfil, som, bateria) · capas, banners e logos automáticos por nome com confirmação e API licenciada · fileira de Mídia/Apps (YouTube, WhatsApp…) · favoritos, busca e filtros · retorno ao Steam Big Picture · assinatura estável do APK
 
-### Segurança
+## Segurança e privacidade
 
-O aplicativo não executa comandos shell: o executável é iniciado diretamente com argumentos separadamente analisados. `nodeIntegration` está desativado, IPC usa preload isolado. O executor roda com as permissões normais do usuário Windows.
-
-## Organização
-
-```
-src/main.cjs             # Windows, executores, armazenamento e IPC
-src/preload.cjs          # API isolada para a interface
-src/backend/library.cjs  # biblioteca e importação legada
-src/renderer/            # interface visual
-.github/workflows/       # build Windows automático
-```
+- Windows: nenhum comando de shell; o executável é iniciado diretamente com argumentos analisados separadamente. `nodeIntegration` desativado, IPC por preload isolado, CSP restrita.
+- Android: sem permissão de launcher padrão nem de atalhos da tela inicial. O leitor de notificações só existe no APK opcional, só funciona depois de liberado pelo usuário e não salva nem envia nada.
+- Perfis são locais (não são contas); biblioteca, horas e saves são compartilhados entre perfis.
