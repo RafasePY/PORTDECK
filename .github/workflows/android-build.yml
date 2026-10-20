@@ -1,7 +1,7 @@
 name: Android APK
 on:
   push:
-    branches: ["feature/android-tablet-v0.1", "feature/android-v0.1.1-shortcuts-nintendo", "feature/android-v0.1.2-home-shortcuts-battery", "feature/android-safe-no-home", "feature/dashboard-profiles-v0.5"]
+    branches: ["feature/android-tablet-v0.1", "feature/android-v0.1.1-shortcuts-nintendo", "feature/android-v0.1.2-home-shortcuts-battery", "feature/android-safe-no-home", "feature/dashboard-profiles-v0.5", "feature/portal-identity-v0.6"]
     paths-ignore: ["**/*.md"]
   pull_request:
     branches: ["feature/pulse-v0.4.2-identity-controls"]
@@ -37,6 +37,6 @@ jobs:
       - name: Upload Android APK
         uses: actions/upload-artifact@v4
         with:
-          name: PortDeck-Android-Safe-v0.5-APK
+          name: PortDeck-Android-Safe-v0.6-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 30

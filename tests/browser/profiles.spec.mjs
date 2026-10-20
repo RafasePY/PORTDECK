@@ -1,0 +1,30 @@
+import {test,expect} from '@playwright/test';
+test('boot selects a player, imports and crops a photo, persists after restart',async({page})=>{
+ await page.goto('/');
+ await expect(page.getByRole('heading',{name:'Quem vai jogar?'})).toBeVisible({timeout:12000});
+ await page.getByRole('button',{name:'Editar perfil de Jogador'}).click();
+ await page.locator('.player-label input').fill('Carlos');
+ await page.locator('input[type=file]').setInputFiles({name:'avatar.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=','base64')});
+ await expect(page.locator('.photo-crop canvas')).toBeVisible();
+ await page.getByRole('button',{name:'Usar foto',exact:true}).click();
+ await expect(page.locator('.player-preview img')).toBeVisible();
+ await page.getByRole('button',{name:'Salvar perfil',exact:true}).click();
+ await page.locator('.player-select').filter({hasText:'Carlos'}).click();
+ await expect(page.locator('.player-chip img')).toBeVisible();
+ await page.reload();
+ await expect(page.getByRole('heading',{name:'Quem vai jogar?'})).toBeVisible({timeout:12000});
+ await expect(page.locator('.player-select img')).toBeVisible();
+ await page.getByRole('button',{name:'Editar perfil de Carlos'}).click();
+ await page.getByRole('button',{name:'Remover foto',exact:true}).click();
+ await page.getByRole('button',{name:'Salvar perfil',exact:true}).click();
+ await expect(page.locator('.player-select img')).toHaveCount(0);
+});
+test('reduced motion and keyboard escape remain usable',async({page})=>{
+ await page.emulateMedia({reducedMotion:'reduce'});
+ await page.goto('/');
+ await expect(page.getByRole('heading',{name:'Quem vai jogar?'})).toBeVisible({timeout:8000});
+ await page.keyboard.press('Escape');
+ await expect(page.locator('[data-player-dialog]')).toHaveCount(0);
+ await page.keyboard.press('p');
+ await expect(page.locator('[data-player-dialog]')).toBeVisible();
+});

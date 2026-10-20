@@ -4,6 +4,7 @@ import{createRoot}from'react-dom/client';
 import{AnimatePresence,motion,useReducedMotion}from'motion/react';
 import './style.css';
 import './dashboard.css';
+import './intro.css';
 import ConsoleHome from './components/ConsoleHome.jsx';
 import GameContextMenu from './components/GameContextMenu.jsx';
 import CloseGameOverlay from './components/CloseGameOverlay.jsx';
@@ -112,7 +113,7 @@ function App(){
   const enabled=!muted;
   const controller=identifyController(pad);
   useEffect(()=>{if(!api?.onHome)return;return api.onHome(()=>{setMenu(null);setEditing(null);setView('home');setFocusZone('games');announce('PortDeck · Início (Start + Select)');});},[]);
-  const enterConsole=useCallback(()=>{if(!stateRef.current.introReady)return;setIntro(false);sound('select',stateRef.current.enabled);},[]);
+  const enterConsole=useCallback(()=>{if(!stateRef.current.introReady)return;setIntro(false);},[]);
   useEffect(()=>{const timer=setInterval(()=>setClock(new Date()),30000);return()=>clearInterval(timer);},[]);
   const announce=useCallback(message=>{setToast(message);clearTimeout(toastTimeout.current);toastTimeout.current=setTimeout(()=>setToast(''),4200);},[]);
   const fail=useCallback(e=>announce('⚠ '+(e?.message||String(e))),[announce]);
@@ -189,7 +190,7 @@ function App(){
     else document.querySelector('.console-actions .console-btn:nth-child(3)')?.click();
   },[]);
   stateRef.current={selected:focusedId,enabled,view,editing,play,jump,openEditor,openMenu,notify:announce,muted,intro,introReady,menu,closing,focusZone,actionIndex,activate};
-  useEffect(()=>{const t=setTimeout(()=>{setIntroReady(true);sound('start',stateRef.current.enabled);},reduced?180:1150);return()=>clearTimeout(t);},[reduced]);
+  useEffect(()=>{const t=setTimeout(()=>{setIntroReady(true);},reduced?180:1150);return()=>clearTimeout(t);},[reduced]);
   useEffect(()=>{const el=document.querySelector('[data-selected="true"]');if(el)el.scrollIntoView({behavior:reduced?'instant':'smooth',inline:'center',block:'nearest'});},[focusedId,view,reduced]);
   useEffect(()=>{
     const listener=e=>{
@@ -330,7 +331,7 @@ function App(){
     <div className="layout">
       <header className="header"><button className="branding" onClick={()=>reveal('home')}><BrandMark/><span className="wordmark">PORT<span>DECK</span></span><em>PULSE</em></button><nav><button className={view==='home'?'on':''} onClick={()=>reveal('home')}>Início</button><button className={view==='library'?'on':''} onClick={()=>reveal('library')}>Biblioteca</button></nav><div className="head-right">
         <span className={'pad-status pad-'+controller.kind}><Icon name="controller" size={19}/>{controller.label}</span>
-        <PlayerProfiles/><time className="console-clock">{clock.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</time>
+        <PlayerProfiles startup={!intro}/><time className="console-clock">{clock.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</time>
         <button className="head-icon" title={muted?'Ativar efeitos sonoros':'Silenciar efeitos sonoros'} onClick={handleSound}><Icon name={muted?'mute':'volume'}/></button>
         <button className="head-icon" title="Tela cheia (F11)" onClick={()=>api?.toggleFullscreen()}><Icon name="fullscreen"/></button>
         <button className="head-icon close-app" title="Sair do PortDeck" onClick={()=>api?.closeWindow?.()}><Icon name="power"/></button>
@@ -363,7 +364,7 @@ function App(){
     <AnimatePresence>{closing&&closingGame&&<CloseGameOverlay key={closing.id} game={closingGame} phase={closing.phase} onCancel={()=>setClosing(null)} onRequest={()=>requestClose(false)} onForce={()=>requestClose(true)}/>}</AnimatePresence>
     <AnimatePresence>{editing&&<EditModal key={editing.id} game={editing} art={art} onClose={()=>setEditing(null)} onSave={save} onDelete={remove} onLaunch={launch} onBrowse={()=>api?.chooseExecutable?.()} onImage={kind=>api?.importArt?.(editing.id,kind)}/>}</AnimatePresence>
     <AnimatePresence>{toast&&<motion.div className="toast" initial={{opacity:0,y:25}} animate={{opacity:1,y:0}} exit={{opacity:0,y:16}} role="status">{toast}</motion.div>}</AnimatePresence>
-    <IntroScreen open={intro} ready={introReady} onEnter={enterConsole} controller={controller}/>
+    <IntroScreen open={intro} ready={introReady} onEnter={enterConsole} controller={controller} muted={muted} onToggleSound={handleSound}/>
   </div>;
 }
 createRoot(document.getElementById('root')).render(<App/>);

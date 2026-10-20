@@ -1,15 +1,12 @@
-import React from 'react';
-/** PORTDECK CORE — símbolo proprietário de portal/caminho. Ícone vetorial escalável, sem mídia de terceiros. */
+import React,{useId} from 'react';
+/** Original PD monogram: a portal, a shared stem and two open paths. */
 export default function BrandMark({large=false,animated=false}){
- return <svg className={'portdeck-core'+(large?' portdeck-core-large':'')+(animated?' portdeck-core-animating':'')} viewBox="0 0 100 100" aria-hidden="true" focusable="false">
- <defs>
-   <linearGradient id="pdcore" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#D9FFFD"/><stop offset=".47" stopColor="#69DAD1"/><stop offset="1" stopColor="#7598CB"/></linearGradient>
-   <linearGradient id="pdcut" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#112735"/><stop offset="1" stopColor="#06111F"/></linearGradient>
- </defs>
- <path d="M27 6 H63 C77 6 87 16 87 30 V63 C87 77 77 87 63 87 H28 C14 87 7 77 7 63 V27 C7 14 14 6 27 6Z" fill="url(#pdcore)" />
- <path d="M32 18H61C69 18 75 24 75 32V60C75 68 69 75 61 75H32C24 75 19 69 19 61V32C19 24 24 18 32 18Z" fill="url(#pdcut)"/>
- <path d="M34 63 V34 L60 26 V47 L34 55" fill="none" stroke="#9BF5E8" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round"/>
- <circle cx="64" cy="69" r="8" fill="#B7FDFF"/>
- {animated&&<circle className="core-arc" cx="50" cy="50" r="47" stroke="#96F6EE" strokeWidth="3" strokeDasharray="23 272" fill="none" strokeLinecap="round"/>}
+ const id=useId().replace(/:/g,'');
+ return <svg className={'portdeck-core portal-mark'+(large?' portdeck-core-large':'')+(animated?' portal-draw':'')} viewBox="0 0 120 120" aria-hidden="true" focusable="false">
+ <defs><linearGradient id={id} x1="0" y1="0" x2="1" y2="1"><stop stopColor="#effaff"/><stop offset=".48" stopColor="#9ad9ff"/><stop offset="1" stopColor="#5a8cff"/></linearGradient></defs>
+ <path className="portal-depth" d="M30 98V22h30c25 0 39 15 39 38s-14 38-39 38H49" fill="none" stroke="#3664ad" strokeWidth="9" strokeLinejoin="round" transform="translate(3 3)"/>
+ <path className="portal-outer" pathLength="1" d="M27 96V20h30c25 0 39 15 39 38S82 96 57 96H46" fill="none" stroke={'url(#'+id+')'} strokeWidth="6" strokeLinecap="square"/>
+ <path className="portal-inner" pathLength="1" d="M46 79V39h12c13 0 19 7 19 17s-6 17-19 17H46" fill="none" stroke="#e5f5ff" strokeWidth="6"/>
+ <path className="portal-horizon" pathLength="1" d="M12 108h96" stroke="#9fd5ff" strokeWidth="1" opacity=".45"/>
  </svg>;
 }
