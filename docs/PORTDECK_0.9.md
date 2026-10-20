@@ -51,7 +51,7 @@ Reproduzir: `npm run build` e `PORTDECK_SCREENSHOTS=1 npx playwright test`. As c
 ## Testes
 - `npm test`: **18/18** (inclui compatibilidade da categoria e preparação Android idempotente preservando chave/pacote).
 - Builds Vite Windows e Android: concluídos.
-- Playwright: suíte de regressão da 0.8 **11/11**; novos testes **7/7**, abrangendo Home, Start+Select, L1/R1, foco, som, usuário, seleção de aba ao adicionar, mover app, reiniciar preservando dados, bateria simulada, último app e confirmação de saída; três tamanhos de tablet.
+- Playwright: suíte de regressão da 0.8 **11/11**; novos testes **8/8**, abrangendo Home, Start+Select, L1/R1, foco, som, usuário, seleção de aba ao adicionar, mover app, reiniciar preservando dados, bateria simulada, último app e confirmação de saída; três tamanhos de tablet e fechamento correto de diálogos sobrepostos.
 - Capturas inspecionadas visualmente; sem simular instalação física como se tivesse ocorrido.
 - Validação dos APKs reais: registrada no workflow Android, antes dos dois uploads. Consultar a execução do commit entregue.
 

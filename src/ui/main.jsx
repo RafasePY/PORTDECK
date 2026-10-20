@@ -117,7 +117,7 @@ function App(){
   const titleArt=game&&art[game.logo];
   const enabled=!muted;
   const controller=identifyController(pad);
-  useEffect(()=>{if(!api?.onHome)return;return api.onHome(()=>{centerCommand('home');});},[]);
+  useEffect(()=>{if(!api?.onHome)return;return api.onHome(()=>{if(!document.querySelector('[data-control-center]'))centerCommand('home');});},[]);
   // Depois da entrada o foco vai para a fileira de jogos.
   const focusShelf=useCallback(()=>{setFocusZone('games');requestAnimationFrame(()=>document.querySelector('.console-tile.active,[data-console-add]')?.focus({preventScroll:true}));},[]);
   const enterConsole=useCallback(()=>{if(!stateRef.current.introReady)return;setIntro(false);},[]);

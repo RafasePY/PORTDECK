@@ -63,7 +63,7 @@ Os testes de navegador usam `dist/` já compilado para o Windows: rode `npm run 
 
 ## Estado em 0.9 (out/2026)
 Pronto: tudo da 0.8, central inferior Home/Start+Select/toque; Jogos/Mídia com L1/R1 e categoria opcional preservada; foco de diálogos e capas ajustado; versionCode 9000, mesma chave fixa e appId; CI verifica assinatura/metadados/Safe das duas variantes. Registro: `docs/PORTDECK_0.9.md`, capturas em `docs/screenshots/0.9/`.
-Validação: 18 testes unitários e 18 de navegador. APIs Android simuladas no navegador; build/assinatura reais conferidos pelo workflow Android.
+Validação: 18 testes unitários e 19 de navegador. APIs Android simuladas no navegador; build/assinatura reais conferidos pelo workflow Android.
 Limites: Android mostra último app aberto, não detecta processo de jogo; Home depende do driver e do primeiro plano. Windows mostra processo acompanhado e abre detalhes; bateria indisponível sem API. Som controla efeitos do PortDeck.
 Pendente no aparelho: atualizar 0.8 → 0.9 mantendo dados, controle físico e notificações reais. Os prints novos citados no pedido não chegaram; não afirmar que foram corrigidos.
 Ideia futura: capas automáticas por nome (exige API licenciada e confirmação do usuário).
