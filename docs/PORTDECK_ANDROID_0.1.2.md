@@ -16,4 +16,4 @@ Start + Select ou Home só podem ser interpretados pelo PortDeck quando ele rece
 Ainda é possível escolher atividades publicamente expostas pelos ports e importar um atalho quando o próprio aplicativo oferecer a interface `ACTION_CREATE_SHORTCUT`. Não é possível ler os ícones de atalhos privativos já fixados pela Samsung One UI.
 
 ## Dados
-Não desinstale as versões anteriores. Esta Preview mantém `com.portdeck.pulse.preview`, mas APKs debug de CI podem ter assinaturas distintas e bloquear instalação por cima da Preview existente. Para preservar os dados da Preview, não desinstale; aguardamos assinatura estável e backup/exportação de perfis para migração segura.
+Não desinstale as versões anteriores. Esta versão usa `com.portdeck.pulse.safe`, instala-se **ao lado das versões anteriores**, e não apaga seus perfis. A nova versão não recupera automaticamente perfis das anteriores. Evite desinstalar os aplicativos anteriores sem backup. Para futuras atualizações estáveis, precisamos estabelecer assinatura digital persistente e exportação/importação.

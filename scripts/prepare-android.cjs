@@ -1,6 +1,6 @@
 const fs=require('node:fs'),path=require('node:path');
 const root=path.resolve('android'),base=path.join(root,'app/src/main');
-const java=path.join(base,'java/com/portdeck/pulse/preview');fs.mkdirSync(java,{recursive:true});
+const java=path.join(base,'java/com/portdeck/pulse/safe');fs.mkdirSync(java,{recursive:true});
 for(const name of ['MainActivity.java','PortDeckNativePlugin.java','PortDeckPlatformPlugin.java'])
   fs.copyFileSync(path.join('android-source',name),path.join(java,name));
 const manifestPath=path.join(base,'AndroidManifest.xml');

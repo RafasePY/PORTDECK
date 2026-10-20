@@ -1,4 +1,4 @@
-package com.portdeck.pulse.preview;
+package com.portdeck.pulse.safe;
 
 import android.content.Context;
 import android.content.Intent;
