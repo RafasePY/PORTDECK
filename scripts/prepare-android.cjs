@@ -13,12 +13,5 @@ if(!manifest.includes('android.intent.action.CREATE_SHORTCUT')){
  if(manifest.includes('<queries>'))throw Error('Atualize as queries do AndroidManifest.xml manualmente.');
  manifest=manifest.replace('<application',queries+'\n    <application');
 }
-// A declaração HOME torna o app elegível, mas NUNCA o configura como padrão.
-if(!manifest.includes('android.intent.category.HOME')){
- const closing=manifest.indexOf('</activity>');
- if(closing<0)throw Error('MainActivity não foi encontrada no manifesto Capacitor.');
- const homeFilter='\n      <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.HOME"/><category android:name="android.intent.category.DEFAULT"/></intent-filter>\n    ';
- manifest=manifest.slice(0,closing)+homeFilter+manifest.slice(closing);
-}
 fs.writeFileSync(manifestPath,manifest);
-console.log('PortDeck Android: integração de atividades e criadores de atalhos configurada.');
+console.log('PortDeck Android: inicialização de jogos configurada, sem acesso à tela inicial do Android.');
