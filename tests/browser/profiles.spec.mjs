@@ -4,7 +4,8 @@ test('boot selects a player, imports and crops a photo, persists after restart',
  await expect(page.getByRole('heading',{name:'Quem vai jogar?'})).toBeVisible({timeout:12000});
  await page.getByRole('button',{name:'Editar perfil de Jogador'}).click();
  await page.locator('.player-label input').fill('Carlos');
- await page.locator('input[type=file]').setInputFiles({name:'avatar.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=','base64')});
+ const image=await page.evaluate(()=>{const c=document.createElement('canvas');c.width=320;c.height=240;const ctx=c.getContext('2d');ctx.fillStyle='#1674dc';ctx.fillRect(0,0,320,240);return c.toDataURL('image/png').split(',')[1];});
+ await page.locator('input[type=file]').setInputFiles({name:'avatar.png',mimeType:'image/png',buffer:Buffer.from(image,'base64')});
  await expect(page.locator('.photo-crop canvas')).toBeVisible();
  await page.getByRole('button',{name:'Usar foto',exact:true}).click();
  await expect(page.locator('.player-preview img')).toBeVisible();
