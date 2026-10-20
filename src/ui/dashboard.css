@@ -144,3 +144,9 @@
 /* Ícone do .exe quando o jogo ainda não tem capa: tamanho próximo do original para não borrar. */
 .console-tile-icon,.tile-exe-icon{position:relative;width:min(64px,42%);height:auto;aspect-ratio:1;object-fit:contain;image-rendering:auto;filter:drop-shadow(0 6px 14px #0009)}
 .tile-placeholder .tile-exe-icon{width:min(72px,40%)}
+/* Menu de opções ao lado da capa, como no PS5: sem escurecer a tela, item focado com contorno claro. */
+.game-menu-shade{background:transparent;backdrop-filter:none}
+.shell .game-context-menu{width:340px;max-width:calc(100vw - 28px);padding:8px 0;background:#161c27f2;border:1px solid #ffffff2b;border-radius:6px;box-shadow:0 26px 60px #000c;backdrop-filter:blur(18px)}
+.shell .game-context-menu [role="menuitem"]{display:block;width:calc(100% - 16px);margin:2px 8px;min-height:50px;padding:13px 18px;font-size:17px;font-weight:400;color:#e9eef5;background:transparent;border:1px solid transparent;border-radius:4px;text-align:left}
+.shell .game-context-menu [role="menuitem"]:hover,.shell .game-context-menu [role="menuitem"]:focus{outline:0;background:#ffffff1c;border-color:#ffffffc0;box-shadow:0 0 18px #9ad9ff22}
+.shell .game-context-menu [role="menuitem"].game-menu-danger{color:#ffb4bc}

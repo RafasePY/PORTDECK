@@ -1,7 +1,10 @@
 import {test,expect} from '@playwright/test';
+// A abertura espera o jogador apertar um botão, como no PS4.
+const enter=async page=>{await page.locator('.ps-welcome[data-ready="true"]').waitFor({timeout:8000});await page.keyboard.press('Enter');};
 const ANDROID='http://127.0.0.1:4174/';
 test('android: empty library offers adding an app once the welcome profile closes',async({page})=>{
  await page.goto(ANDROID);
+ await enter(page);
  await expect(page.getByRole('heading',{name:'Quem vai jogar?'})).toBeVisible({timeout:12000});
  await expect(page.getByRole('heading',{name:'Adicionar aplicativo Android'})).toHaveCount(0);
  await page.locator('.player-select').first().click();
@@ -9,6 +12,7 @@ test('android: empty library offers adding an app once the welcome profile close
 });
 test('android: dismissing the welcome also offers the first app, but switching profiles later does not',async({page})=>{
  await page.goto(ANDROID);
+ await enter(page);
  await expect(page.getByRole('heading',{name:'Quem vai jogar?'})).toBeVisible({timeout:12000});
  await page.keyboard.press('Escape');
  await expect(page.getByRole('heading',{name:'Adicionar aplicativo Android'})).toBeVisible();
@@ -21,6 +25,7 @@ test('android: dismissing the welcome also offers the first app, but switching p
 test('android: a library with games goes straight to the console after the profile',async({page})=>{
  await page.addInitScript(()=>localStorage.setItem('portdeck-android-library-v1',JSON.stringify([{id:'demo',packageName:'com.example.demo',name:'Demo',cover:'',banner:'',logo:'',playedSeconds:0,lastPlayed:null}])));
  await page.goto(ANDROID);
+ await enter(page);
  await expect(page.getByRole('heading',{name:'Quem vai jogar?'})).toBeVisible({timeout:12000});
  await page.locator('.player-select').first().click();
  await expect(page.locator('[data-player-dialog]')).toHaveCount(0);
@@ -30,6 +35,7 @@ const withGames=()=>localStorage.setItem('portdeck-android-library-v1',JSON.stri
 test('android: arrow keys move through games right after the welcome profile closes',async({page})=>{
  await page.addInitScript(withGames);
  await page.goto(ANDROID);
+ await enter(page);
  await expect(page.getByRole('heading',{name:'Quem vai jogar?'})).toBeVisible({timeout:12000});
  await page.keyboard.press('Escape');
  await expect(page.locator('.console-tile.active')).toBeFocused();
@@ -40,6 +46,7 @@ test('android: arrow keys move through games right after the welcome profile clo
 test('android: notification settings explain access and preview a pop-up',async({page})=>{
  await page.addInitScript(withGames);
  await page.goto(ANDROID);
+ await enter(page);
  await expect(page.getByRole('heading',{name:'Quem vai jogar?'})).toBeVisible({timeout:12000});
  await page.keyboard.press('Escape');
  await page.getByRole('button',{name:'Notificações do tablet'}).click();

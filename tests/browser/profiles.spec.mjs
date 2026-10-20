@@ -1,6 +1,9 @@
 import {test,expect} from '@playwright/test';
+// A abertura espera o jogador apertar um botão, como no PS4.
+const enter=async page=>{await page.locator('.ps-welcome[data-ready="true"]').waitFor({timeout:8000});await page.keyboard.press('Enter');};
 test('boot selects a player, imports and crops a photo, persists after restart',async({page})=>{
  await page.goto('/');
+ await enter(page);
  await expect(page.getByRole('heading',{name:'Quem vai jogar?'})).toBeVisible({timeout:12000});
  await page.getByRole('button',{name:'Editar perfil de Jogador'}).click();
  await page.locator('.player-label input').fill('Carlos');
@@ -13,6 +16,7 @@ test('boot selects a player, imports and crops a photo, persists after restart',
  await page.locator('.player-select').filter({hasText:'Carlos'}).click();
  await expect(page.locator('.player-chip img')).toBeVisible();
  await page.reload();
+ await enter(page);
  await expect(page.getByRole('heading',{name:'Quem vai jogar?'})).toBeVisible({timeout:12000});
  await expect(page.locator('.player-select img')).toBeVisible();
  await page.getByRole('button',{name:'Editar perfil de Carlos'}).click();
@@ -23,19 +27,45 @@ test('boot selects a player, imports and crops a photo, persists after restart',
 test('reduced motion and keyboard escape remain usable',async({page})=>{
  await page.emulateMedia({reducedMotion:'reduce'});
  await page.goto('/');
+ await enter(page);
  await expect(page.getByRole('heading',{name:'Quem vai jogar?'})).toBeVisible({timeout:8000});
  await page.keyboard.press('Escape');
  await expect(page.locator('[data-player-dialog]')).toHaveCount(0);
  await page.keyboard.press('p');
  await expect(page.locator('[data-player-dialog]')).toBeVisible();
 });
-test('intro progress bar counts down exactly the auto-advance after preparation',async({page})=>{
+test('welcome screen waits for the player like the PS4 and names the button',async({page})=>{
  await page.goto('/');
- const bar=page.locator('.portal-intro-progress i');
- await expect(bar).toHaveCount(0);
- await expect(page.getByRole('button',{name:/Pular abertura/})).toBeEnabled();
- await expect(bar).toHaveCount(1);
- expect(await bar.evaluate(el=>getComputedStyle(el).animationDuration)).toBe('3.9s');
+ const welcome=page.locator('.ps-welcome');
+ await expect(welcome.getByRole('heading',{name:'Bem-vindo de volta ao PortDeck'})).toBeVisible();
+ await expect(welcome).toHaveAttribute('data-ready','true',{timeout:8000});
+ await expect(welcome).toContainText('Pressione Enter para começar.');
+ await page.waitForTimeout(5500);
+ await expect(welcome).toBeVisible();
+ await expect(page.locator('[data-player-dialog]')).toHaveCount(0);
+ await page.keyboard.press('Enter');
+ await expect(page.getByRole('heading',{name:'Quem vai jogar?'})).toBeVisible();
+});
+test('game options open beside the selected cover without dimming the screen',async({page})=>{
+ await page.addInitScript(desktopLibrary);
+ await page.goto('/');
+ await enter(page);
+ await expect(page.getByRole('heading',{name:'Quem vai jogar?'})).toBeVisible();
+ await page.keyboard.press('Escape');
+ const tile=page.locator('.console-tile.active');
+ await expect(tile).toBeFocused();
+ await page.waitForTimeout(700);
+ await tile.click({button:'right'});
+ const menu=page.getByRole('menu');
+ await expect(menu).toBeVisible();
+ await page.waitForTimeout(450);
+ const [t,m]=await Promise.all([tile.boundingBox(),menu.boundingBox()]);
+ expect(m.x).toBeGreaterThanOrEqual(t.x+t.width);
+ expect(Math.abs(m.y-t.y)).toBeLessThan(4);
+ expect(await page.locator('.game-menu-shade').evaluate(el=>getComputedStyle(el).backgroundColor)).toBe('rgba(0, 0, 0, 0)');
+ await expect(page.getByRole('menuitem',{name:'Jogar'})).toBeFocused();
+ await page.keyboard.press('Escape');
+ await expect(menu).toHaveCount(0);
 });
 const desktopLibrary=()=>{
  const games=['Celeste','Hollow Knight','Doom 64'].map((name,i)=>({id:'g'+i,name,exe:'C:/Ports/'+i+'/play.exe',cover:'',banner:'',logo:'',playedSeconds:0,lastPlayed:new Date(Date.now()-i*86400000).toISOString()}));
@@ -45,6 +75,7 @@ const desktopLibrary=()=>{
 test('arrow keys move through games right after the welcome profile closes',async({page})=>{
  await page.addInitScript(desktopLibrary);
  await page.goto('/');
+ await enter(page);
  await expect(page.getByRole('heading',{name:'Quem vai jogar?'})).toBeVisible({timeout:12000});
  await page.keyboard.press('Escape');
  await expect(page.locator('.console-tile.active')).toBeFocused();
@@ -55,6 +86,7 @@ test('arrow keys move through games right after the welcome profile closes',asyn
 test('games without a cover show the icon from their executable',async({page})=>{
  await page.addInitScript(desktopLibrary);
  await page.goto('/');
+ await enter(page);
  await expect(page.getByRole('heading',{name:'Quem vai jogar?'})).toBeVisible({timeout:12000});
  await page.keyboard.press('Escape');
  await expect(page.locator('[data-console-tile="g1"] .console-tile-icon')).toHaveCount(1);

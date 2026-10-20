@@ -378,7 +378,7 @@ function App(){
     <AnimatePresence>{closing&&closingGame&&<CloseGameOverlay key={closing.id} game={closingGame} phase={closing.phase} onCancel={()=>setClosing(null)} onRequest={()=>requestClose(false)} onForce={()=>requestClose(true)}/>}</AnimatePresence>
     <AnimatePresence>{editing&&<EditModal key={editing.id} game={editing} art={art} onClose={()=>setEditing(null)} onSave={save} onDelete={remove} onLaunch={launch} onBrowse={()=>api?.chooseExecutable?.()} onImage={kind=>api?.importArt?.(editing.id,kind)}/>}</AnimatePresence>
     <AnimatePresence>{toast&&<motion.div className="toast" initial={{opacity:0,y:25}} animate={{opacity:1,y:0}} exit={{opacity:0,y:16}} role="status">{toast}</motion.div>}</AnimatePresence>
-    <IntroScreen open={intro} ready={introReady} onEnter={enterConsole} controller={controller} muted={muted} onToggleSound={handleSound}/>
+    <IntroScreen open={intro} ready={introReady} onEnter={enterConsole} controller={controller} muted={muted}/>
   </div>;
 }
 createRoot(document.getElementById('root')).render(<App/>);
