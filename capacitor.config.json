@@ -1,6 +1,6 @@
 {
-  "appId": "com.portdeck.pulse",
-  "appName": "PortDeck",
+  "appId": "com.portdeck.pulse.beta",
+  "appName": "PortDeck Beta",
   "webDir": "dist-android",
   "plugins": {
     "SplashScreen": {

@@ -19,12 +19,12 @@ function GameTile({game,selected,src,onSelect,onContext}){
     <span className="console-tile-caption">{game.name}</span>
   </motion.button>;
 }
-export default function ConsoleHome({games,game,art,selected,onSelect,onPlay,onConfigure,onDetails,onAdd,onContext,onMenu,zone='games',actionIndex=0,onZone,onAction}){
+export default function ConsoleHome({games,game,art,selected,onSelect,onPlay,onConfigure,onDetails,onAdd,onContext,onMenu,isAddSelected=false,onAddFocus,zone='games',actionIndex=0,onZone,onAction}){
   const shelf=useRef(null);
   useEffect(()=>{
-    const item=shelf.current?.querySelector('[data-console-tile].active');
+    const item=shelf.current?.querySelector(isAddSelected?'[data-console-add="true"]':'[data-console-tile].active');
     item?.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'nearest',inline:'center'});
-  },[selected]);
+  },[selected,isAddSelected]);
   const logo=game?.logo&&art[game.logo];
   const backdrop=game?.banner&&art[game.banner];
   const description=game?.description?.trim()||'';
@@ -33,7 +33,7 @@ export default function ConsoleHome({games,game,art,selected,onSelect,onPlay,onC
     <section className="console-shelf" aria-label="Jogos cadastrados">
       <div className="console-shelf-scroll" ref={shelf}>
         {games.map(g=><GameTile key={g.id} game={g} selected={g.id===selected} src={g.cover&&art[g.cover]} onSelect={id=>{onZone('games');onSelect(id);}} onContext={onContext}/>)}
-        <button className="console-add" onClick={onAdd} title="Adicionar port" aria-label="Adicionar port"><span>+</span><small>Adicionar</small></button>
+        <button data-console-add="true" className={'console-add'+(isAddSelected?' console-add-selected':'')} aria-pressed={isAddSelected} onFocus={()=>onAddFocus?.()} onClick={onAdd} title="Adicionar port" aria-label="Adicionar port"><span>+</span><small>Adicionar</small></button>
       </div>
       <div className="console-shelf-progress">{games.length?String(Math.max(1,games.findIndex(g=>g.id===selected)+1)).padStart(2,'0')+' / '+String(games.length).padStart(2,'0'):'BIBLIOTECA VAZIA'}</div>
     </section>
