@@ -1,7 +1,9 @@
+import PlayerProfiles,{profileCommand} from './components/PlayerProfiles.jsx';
 import React,{useCallback,useEffect,useRef,useState} from 'react';
 import{createRoot}from'react-dom/client';
 import{AnimatePresence,motion,useReducedMotion}from'motion/react';
 import './style.css';
+import './dashboard.css';
 import ConsoleHome from './components/ConsoleHome.jsx';
 import GameContextMenu from './components/GameContextMenu.jsx';
 import CloseGameOverlay from './components/CloseGameOverlay.jsx';
@@ -193,6 +195,9 @@ function App(){
     const listener=e=>{
       const st=stateRef.current;
       if(st.intro){if(['Enter',' ','Home'].includes(e.key)){e.preventDefault();if(st.introReady){setIntro(false);sound('select',st.enabled);}}return;}
+      if(document.querySelector('[data-player-dialog]'))return;
+      if(!e.target?.closest?.('input,textarea,select')&&e.key.toLowerCase()==='p'){e.preventDefault();document.querySelector('.player-chip')?.click();return;}
+      if(e.target?.closest?.('.header')&&!['ArrowDown','ArrowUp'].includes(e.key))return;
       if(e.ctrlKey&&e.shiftKey&&e.key.toLowerCase()==='h'&&!st.closing){
         e.preventDefault();setEditing(null);setMenu(null);setView('home');setFocusZone('games');st.notify('PortDeck · Início');return;
       }
@@ -236,8 +241,8 @@ function App(){
     return()=>window.removeEventListener('keydown',listener);
   },[]);
   useEffect(()=>{
-    if(intro||editing||menu||closing||view!=='home')return;
-    const selector=focusZone==='games'?'.console-tile.active':'.console-actions .console-btn:nth-child('+(actionIndex+1)+')';
+    if(intro||editing||menu||closing||view!=='home'||document.querySelector('[data-player-dialog]'))return;
+    const selector=focusZone==='header'?'.player-chip':focusZone==='games'?'.console-tile.active':'.console-actions .console-btn:nth-child('+(actionIndex+1)+')';
     const button=document.querySelector(selector);
     if(button&&button!==document.activeElement)button.focus({preventScroll:true});
   },[intro,editing,menu,closing,view,focusZone,actionIndex,focusedId]);
@@ -257,13 +262,16 @@ function App(){
         const down=n=>Boolean(pad.buttons[n]?.pressed);
         // Standard mapping: centro 16. Alguns drivers e Steam Input podem ocultar esse botão.
         const cmd=comboCommand(pad.buttons,pad.axes);
-        if(st.intro){
+        if(document.querySelector('[data-player-dialog]')){
+          if(cmd&&(cmd!==prior||(['left','right','up','down'].includes(cmd)&&performance.now()-stamp>240))){stamp=performance.now();profileCommand(cmd);}prior=cmd;
+        }else if(st.intro){
           if(st.introReady&&['home','home-combo','menu','accept'].includes(cmd)){setIntro(false);sound('select',st.enabled);prior='';}
         }else{
           const now=performance.now(),canRepeat=['left','right','up','down'].includes(cmd);
           if(cmd&&(cmd!==prior||(canRepeat&&now-stamp>240))){
             stamp=now;
-            if((cmd==='home-combo'||cmd==='home')&&st.closing?.phase!=='closing'){
+            if(st.focusZone==='header'&&!['home','home-combo'].includes(cmd)){if(cmd==='accept')document.querySelector('.player-chip')?.click();else if(cmd==='down'||cmd==='back')setFocusZone('games');}
+            else if((cmd==='home-combo'||cmd==='home')&&st.closing?.phase!=='closing'){
               setMenu(null);setEditing(null);setClosing(null);setView('home');setFocusZone('games');
               st.notify('Início · PortDeck');sound('select',st.enabled);
             }
@@ -289,7 +297,7 @@ function App(){
             else if(cmd==='back'){setView('home');setFocusZone('games');sound('back',st.enabled);}
             else if(cmd==='edit')st.openEditor(st.selected);
             else if(cmd==='options'&&st.view==='home'){setFocusZone('actions');setActionIndex(2);document.querySelector('.console-actions .console-btn:nth-child(3)')?.click();}
-            else if(cmd==='up'&&st.view==='home'){setFocusZone('games');sound('move',st.enabled);}
+            else if(cmd==='up'&&st.view==='home'){setFocusZone(st.focusZone==='games'?'header':'games');sound('move',st.enabled);}
             else if(cmd==='down'&&st.view==='home'){setFocusZone('actions');setActionIndex(0);sound('move',st.enabled);}
             else if(cmd==='left'||cmd==='right'){
               if(st.view==='home'&&st.focusZone==='actions'){
@@ -322,7 +330,7 @@ function App(){
     <div className="layout">
       <header className="header"><button className="branding" onClick={()=>reveal('home')}><BrandMark/><span className="wordmark">PORT<span>DECK</span></span><em>PULSE</em></button><nav><button className={view==='home'?'on':''} onClick={()=>reveal('home')}>Início</button><button className={view==='library'?'on':''} onClick={()=>reveal('library')}>Biblioteca</button></nav><div className="head-right">
         <span className={'pad-status pad-'+controller.kind}><Icon name="controller" size={19}/>{controller.label}</span>
-        <span className="console-user"><span className="console-user-avatar">P</span> Jogador</span><time className="console-clock">{clock.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</time>
+        <PlayerProfiles/><time className="console-clock">{clock.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</time>
         <button className="head-icon" title={muted?'Ativar efeitos sonoros':'Silenciar efeitos sonoros'} onClick={handleSound}><Icon name={muted?'mute':'volume'}/></button>
         <button className="head-icon" title="Tela cheia (F11)" onClick={()=>api?.toggleFullscreen()}><Icon name="fullscreen"/></button>
         <button className="head-icon close-app" title="Sair do PortDeck" onClick={()=>api?.closeWindow?.()}><Icon name="power"/></button>

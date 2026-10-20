@@ -1,0 +1,143 @@
+/* PortDeck 0.5 — console dashboard. Shared by desktop and Android. */
+:root{--dashboard-accent:#1674dc;--dashboard-text:#f5f8ff;--dashboard-muted:#c4d3e7}
+.shell{min-height:0;background:#071b3d}
+.shell .wallpaper.no-art{background:radial-gradient(ellipse at 75% 15%,var(--dashboard-accent),transparent 75%),linear-gradient(145deg,#123c77,#05162f)}
+.shell .wallpaper.no-art:before{width:150vw;height:55vh;aspect-ratio:auto;top:40%;left:-30%;border-radius:50%;border:1px solid #d8ecff24;box-shadow:0 -25px 80px #96caff12,0 -80px 0 #b8dcff04;transform:rotate(-12deg);animation:dashboard-wave 22s ease-in-out infinite alternate}
+.shell .wallpaper.no-art:after{display:none}
+.shell .wallpaper{filter:brightness(.76) saturate(.8)}
+.shell .vignette{background:linear-gradient(90deg,#061b38e6, #071b3880 46%,#06152a20),linear-gradient(0deg,#041328e8,transparent 65%),linear-gradient(180deg,#061730a3,transparent 34%)}
+.shell .ambient-noise{background:none}
+.shell .layout{padding-inline:clamp(22px,5.4vw,110px)}
+.shell .header{height:clamp(68px,11vh,108px);gap:clamp(18px,3vw,58px);border:0}
+.shell .branding{font-size:19px;gap:10px;letter-spacing:-.6px}
+.shell .branding em{display:none}
+.shell .portdeck-core{width:29px;height:29px;filter:none}
+.shell .header nav{gap:25px}
+.shell .header nav button{font-size:15px;font-weight:400;padding-top:0;color:#c7d8ed}
+.shell .header nav button.on{color:white}
+.shell .header nav button.on:after{bottom:20%;background:#fff;height:2px;box-shadow:none}
+.shell .head-right{gap:18px}
+.shell .head-icon{background:transparent;border:0;border-radius:3px}
+.shell .head-icon:hover{background:#ffffff16}
+.shell .pad-status{font-size:11px;color:#bed0e7}
+.shell .console-clock{font-weight:400;font-size:15px}
+.shell .console-shelf{--tile:clamp(112px,14.5vh,182px);height:calc(var(--tile) + 82px);padding:13px 0 0;flex-shrink:0}
+.shell .console-shelf-scroll{align-items:flex-start;gap:12px;padding:7px 8px 7px;margin-left:-8px;scroll-padding-inline:10px}
+.shell .console-tile{flex:0 0 var(--tile);height:calc(var(--tile) + 28px);gap:10px;transition:flex-basis .22s ease,opacity .2s ease}
+.shell .console-tile.active{flex-basis:calc(var(--tile) + 26px);height:calc(var(--tile) + 54px)}
+.shell .console-tile .console-tile-art{width:100%;flex:none;height:auto;aspect-ratio:1;border-radius:2px;border:1px solid #dceaff38;box-shadow:0 8px 20px #00102744}
+.shell .console-tile.active .console-tile-art{border:2px solid white;box-shadow:0 0 0 3px #ffffff22,0 15px 35px #00102760}
+.shell .console-tile:not(.active){opacity:.76}
+.shell .console-tile:hover,.shell .console-tile:focus-visible{opacity:1}
+.shell .console-tile-caption{font-size:12px;font-weight:400;text-align:left;width:100%;text-shadow:0 2px 8px #0008}
+.shell .console-tile:not(.active) .console-tile-caption{visibility:hidden}
+.shell .console-tile.active .console-tile-caption{font-weight:500}
+.shell .console-tile-fallback{background:radial-gradient(ellipse at top right,var(--dashboard-accent),transparent),#102b51}
+.shell .console-tile-fallback strong{font-weight:300;color:#dcecff;font-size:40px;letter-spacing:-2px}
+.shell .console-add{flex:0 0 var(--tile);height:var(--tile);margin:0;border:1px solid #e4efff38;border-radius:2px;background:#15325a65;gap:9px}
+.shell .console-add:hover{background:#ffffff16;border-color:#fff}
+.shell .console-add span{font-size:40px}
+.shell .console-add-selected{outline:2px solid white;outline-offset:4px}
+.shell .console-shelf-progress{bottom:0;right:0;font-size:10px;color:#bed2ee;background:transparent}
+.shell .console-stage{align-items:center}
+.shell .console-story{width:min(780px,75vw);max-width:100%;padding:18px 0 24px}
+.shell .console-eyebrow{font-size:10px;letter-spacing:.2em;font-weight:500;color:#c3d9f3}
+.shell .console-led{display:none}
+.shell .console-story h1{font-size:clamp(32px,4.1vw,70px);font-weight:350;line-height:1.1;letter-spacing:-.035em;margin:20px 0 14px;text-shadow:0 4px 20px #00102588}
+.shell .console-game-logo{max-height:clamp(70px,14vh,155px);max-width:min(560px,65vw);margin:18px 0}
+.shell .console-description{font-size:15px;line-height:1.6;color:#d0dced;font-weight:400;max-width:590px;-webkit-line-clamp:2}
+.shell .console-metadata{font-size:12px;font-weight:400;color:#b8cce5;margin:10px 0 24px;gap:18px}
+.shell .console-actions{gap:10px}
+.shell .console-btn{border-radius:3px;min-height:46px;font-size:14px;font-weight:500;padding:0 24px;box-shadow:none}
+.shell .console-btn.console-play{background:#f6f9ff;color:#112747;border:1px solid #fff;min-width:190px}
+.shell .console-btn.console-secondary{background:#102b4e60;border:1px solid #dbeaff60;backdrop-filter:none;min-width:140px}
+.shell .console-btn:hover{transform:none;background:#ffffff24;color:white}
+.shell .console-btn.console-play:hover{background:#fff;color:#112747}
+.shell .console-btn.console-focused,.shell button:focus-visible{outline:2px solid #fff;outline-offset:4px}
+.shell .console-hint{display:none}
+.shell .statusbar{border:0;min-height:42px;color:#bfd0e7;font-weight:400}
+.shell .statusbar small{font-size:9px;font-weight:400;letter-spacing:.1em}
+.shell .statusbar .keycap{border-radius:3px;background:none;color:#e4efff}
+.shell .game-context-menu{background:#102849f5;border-radius:3px;border-color:#e0edff35}
+.player-chip{display:flex;align-items:center;gap:10px;border:0;background:transparent;padding:5px;border-radius:3px;color:#f4f8ff;min-height:42px;max-width:200px;text-align:left}
+.player-chip:hover{background:#ffffff12}
+.player-avatar{display:grid;place-items:center;flex:none;width:34px;height:34px;border-radius:4px;color:#fff;font-size:23px;box-shadow:inset 0 0 0 1px #ffffff35}
+.player-name{max-width:135px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;font-weight:500}
+.player-shade{position:fixed;inset:0;z-index:120;display:grid;place-items:center;padding:24px;background:#041128ed;backdrop-filter:blur(16px)}
+.player-panel{width:min(700px,100%);max-height:92dvh;overflow:auto;padding:clamp(22px,4vw,46px);background:linear-gradient(150deg,#163c68,#0c203d);border:1px solid #d5e9ff28;border-radius:6px;box-shadow:0 30px 100px #0005;color:#f5f8ff}
+.player-panel header{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:28px}
+.player-panel header small{font-size:10px;letter-spacing:.2em;color:#b8cfe9}
+.player-panel h2{font-size:clamp(26px,4vw,39px);font-weight:350;letter-spacing:-.03em;margin:12px 0 0}
+.player-panel button{color:inherit;border-radius:3px;font:inherit}
+.player-close{background:none;border:0;font-size:30px!important;min-width:44px;min-height:44px}
+.player-list{display:grid;gap:8px}
+.player-row{display:flex;align-items:center;gap:8px}
+.player-select{display:flex;align-items:center;gap:16px;width:100%;background:#ffffff07;border:1px solid #d9ebff20;text-align:left;padding:14px;min-width:0}
+.player-select[aria-pressed=true]{background:#ffffff12;border-color:#c8e4ff80}
+.player-select>span:nth-child(2){min-width:0;flex:1}
+.player-select strong{font-size:17px;font-weight:500;display:block;overflow-wrap:anywhere}
+.player-select small,.player-preview small{display:block;font-size:11px;color:#b6cee8;margin-top:5px}
+.player-select .player-avatar{width:48px;height:48px;font-size:30px}
+.player-check{font-size:19px;color:#c5e5ff}
+.player-edit{padding:12px;border:1px solid #ffffff25;background:transparent;font-size:12px!important}
+.player-create{width:100%;border:1px dashed #d9ebff50;background:transparent;min-height:52px;margin-top:20px}
+.player-note{font-size:12px;line-height:1.6;color:#b9cde5;margin:22px 0 0}
+.player-panel button:hover{background-color:#ffffff20}
+.player-panel button:focus-visible,.player-panel input:focus-visible{outline:2px solid white;outline-offset:3px}
+.player-preview{display:flex;align-items:center;gap:18px;margin:0 0 24px}
+.player-preview .player-avatar{width:72px;height:72px;font-size:42px}
+.player-preview strong{font-size:23px;font-weight:400;overflow-wrap:anywhere}
+.player-label{display:grid;gap:10px;font-size:13px}
+.player-label input{width:100%;border:1px solid #cce4ff60;background:#071b35;color:white;border-radius:3px;padding:13px;font:inherit}
+.player-panel fieldset{border:0;padding:0;margin:25px 0}
+.player-panel legend{font-size:13px;padding:0;margin-bottom:12px}
+.player-options{display:flex;gap:10px;flex-wrap:wrap}
+.player-options button{width:48px;height:48px;font-size:28px;background:#ffffff08;border:1px solid #cbe2ff30}
+.player-panel [aria-pressed=true]{border-color:#fff}
+.player-themes{display:flex;gap:8px;flex-wrap:wrap}
+.player-themes button{display:flex;align-items:center;gap:8px;padding:10px;background:#ffffff08;border:1px solid #cbe2ff30;font-size:12px}
+.player-themes i{width:15px;height:15px;border-radius:50%;border:1px solid #fff6}
+.player-panel footer{display:flex;justify-content:flex-end;gap:10px;margin-top:28px}
+.player-panel footer button{padding:12px 20px;border:1px solid #cbe2ff50;background:transparent}
+.player-panel .player-primary{background:#f3f8ff;color:#102a4a;border-color:#fff}
+.player-panel .player-primary:hover{background:#d9eaff}
+.player-error{padding:12px;background:#592638;color:#ffe0e7;line-height:1.5;font-size:13px;border-radius:3px}
+.android-shell .ad-controller-setting{gap:5px}
+.android-shell .ad-controller-setting label{display:none}
+.android-shell .ad-controller-setting select{max-width:110px;background:#15325790;border-color:#c8dfff33;border-radius:3px;font-size:11px}
+.android-shell .ad-status-meter{background:transparent;border:0;padding:0}
+.android-shell .ad-modal{background:linear-gradient(145deg,#16365c,#0b203d);border-radius:5px;border-color:#cce4ff40}
+.android-shell .ad-primary{border-radius:3px;background:#eef6ff;color:#102a4a}
+@keyframes dashboard-wave{to{transform:translateY(-5%) rotate(-7deg)}}
+@media(max-width:1100px){
+ .shell .header{gap:22px}.shell .head-right{gap:10px}.shell .pad-status{display:none}
+ .shell .player-name{max-width:95px}.shell .branding{font-size:16px}.shell .header nav{gap:16px}
+}
+@media(max-width:760px){
+ .shell .layout{padding-inline:22px}.shell .header{height:76px;gap:16px;flex-wrap:wrap;align-content:center;row-gap:6px}
+ .shell .branding .wordmark,.shell .console-clock,.shell .head-icon.close-app{display:none}
+ .shell .header nav button{font-size:13px}.shell .header nav button.on:after{bottom:-4px}
+ .shell .head-right{gap:8px}.shell .player-name{display:none}
+ .shell .console-shelf{--tile:112px}.shell .console-story{width:100%;padding:12px 0}
+ .shell .console-story h1{font-size:clamp(30px,6vw,46px)}
+ .shell .console-btn{padding:0 14px;min-width:0!important;min-height:44px;font-size:12px}
+ .shell .console-metadata{gap:10px;margin-bottom:16px;font-size:11px}
+ .shell .statusbar>small{display:none}.shell .statusbar{font-size:10px}
+ .android-shell .ad-controller-setting select{max-width:85px}
+ .player-shade{padding:12px}.player-panel{padding:22px}
+}
+@media(max-height:650px){
+ .shell .header{height:58px}.shell .console-shelf{--tile:94px;height:153px;padding-top:2px}
+ .shell .console-story{padding:6px 0}.shell .console-story h1{font-size:32px;margin:10px 0}
+ .shell .console-eyebrow,.shell .console-description{display:none}
+ .shell .console-game-logo{max-height:65px;margin:6px 0}
+ .shell .console-metadata{margin:7px 0 12px}
+ .shell .console-btn{min-height:40px}.shell .statusbar{min-height:30px}
+}
+@media(max-height:430px){
+ .shell main{overflow:auto}.shell .console-home{min-height:300px}.shell .console-shelf{--tile:76px;height:130px}
+}
+@media(prefers-reduced-motion:reduce){
+ .shell .wallpaper.no-art:before{animation:none}
+ .shell .console-tile,.shell .console-btn{transition:none}
+}
