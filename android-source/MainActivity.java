@@ -5,6 +5,7 @@ import com.getcapacitor.BridgeActivity;
 public class MainActivity extends BridgeActivity {
   @Override public void onCreate(Bundle state) {
     registerPlugin(PortDeckNativePlugin.class);
+    registerPlugin(PortDeckPlatformPlugin.class);
     super.onCreate(state);
     // Interface em tela cheia; a barra do sistema reaparece com um gesto.
     getWindow().getDecorView().setSystemUiVisibility(

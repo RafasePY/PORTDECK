@@ -1,7 +1,7 @@
 import React from 'react';
 /** PORTDECK CORE — símbolo proprietário de portal/caminho. Ícone vetorial escalável, sem mídia de terceiros. */
-export default function BrandMark({large=false}){
- return <svg className={'portdeck-core'+(large?' portdeck-core-large':'')} viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+export default function BrandMark({large=false,animated=false}){
+ return <svg className={'portdeck-core'+(large?' portdeck-core-large':'')+(animated?' portdeck-core-animating':'')} viewBox="0 0 100 100" aria-hidden="true" focusable="false">
  <defs>
    <linearGradient id="pdcore" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#D9FFFD"/><stop offset=".47" stopColor="#69DAD1"/><stop offset="1" stopColor="#7598CB"/></linearGradient>
    <linearGradient id="pdcut" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#112735"/><stop offset="1" stopColor="#06111F"/></linearGradient>
@@ -10,6 +10,6 @@ export default function BrandMark({large=false}){
  <path d="M32 18H61C69 18 75 24 75 32V60C75 68 69 75 61 75H32C24 75 19 69 19 61V32C19 24 24 18 32 18Z" fill="url(#pdcut)"/>
  <path d="M34 63 V34 L60 26 V47 L34 55" fill="none" stroke="#9BF5E8" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round"/>
  <circle cx="64" cy="69" r="8" fill="#B7FDFF"/>
- <path className="core-arc" d="M84 15A45 45 0 0 1 96 51" stroke="#96F6EE" strokeWidth="4.3" fill="none" strokeLinecap="round"/>
+ {animated&&<circle className="core-arc" cx="50" cy="50" r="47" stroke="#96F6EE" strokeWidth="3" strokeDasharray="23 272" fill="none" strokeLinecap="round"/>}
  </svg>;
 }

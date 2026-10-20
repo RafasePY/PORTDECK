@@ -284,3 +284,7 @@ body{font-family:"Segoe UI Variable Text","Segoe UI",Arial,sans-serif;letter-spa
 @media(prefers-reduced-motion:reduce){
  .core-arc,.pd-gate-aura,.pd-gate-bottom button,.pd-gate-icon .portdeck-core-large{animation:none!important}
 }
+
+/* 0.1.2: o anel só gira no curto boot e fica FORA do símbolo. */
+.portdeck-core .core-arc, .pd-gate-icon .core-arc{animation:none!important;transform-origin:50% 50%}
+.pd-gate-icon .portdeck-core-animating .core-arc{animation:core-orbit 1.2s linear infinite!important}
