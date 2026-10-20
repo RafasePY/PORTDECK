@@ -1,5 +1,5 @@
 import PlayerProfiles,{profileCommand} from './components/PlayerProfiles.jsx';
-import React,{useCallback,useEffect,useRef,useState} from 'react';
+import React,{useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import{createRoot}from'react-dom/client';
 import{AnimatePresence,motion,useReducedMotion}from'motion/react';
 import './style.css';
@@ -57,11 +57,11 @@ const Icon=({name,size=20})=>{
   };
   return <svg {...common}>{shapes[name]||shapes.play}</svg>;
 };
-function Cover({game,art,active,onClick,compact=false}){
+function Cover({game,art,icon,active,onClick,compact=false}){
   const photo=game.cover&&art[game.cover];
   return <motion.button type="button" layout="position" whileHover={{y:-8,scale:1.035}} whileTap={{scale:.96}} transition={{type:'spring',stiffness:350,damping:27}} onClick={onClick}
     className={'game-tile'+(active?' chosen':'')+(compact?' compact':'')} aria-label={'Selecionar '+game.name} aria-pressed={active}>
-    <div className="tile-visual">{photo?<img src={photo} alt="" loading="lazy"/>:<div className="tile-placeholder"><span className="fake-orbit"/><strong>{game.name.slice(0,2).toUpperCase()}</strong></div>}
+    <div className="tile-visual">{photo?<img src={photo} alt="" loading="lazy"/>:<div className="tile-placeholder"><span className="fake-orbit"/>{icon?<img className="tile-exe-icon" src={icon} alt=""/>:<strong>{game.name.slice(0,2).toUpperCase()}</strong>}</div>}
       <div className="tile-overlay"/>{active&&<span className="tile-active">SELECIONADO</span>}
     </div><div className="tile-meta"><strong>{game.name}</strong><small>{$time(seconds(game))}</small></div>
   </motion.button>;
@@ -113,6 +113,8 @@ function App(){
   const enabled=!muted;
   const controller=identifyController(pad);
   useEffect(()=>{if(!api?.onHome)return;return api.onHome(()=>{setMenu(null);setEditing(null);setView('home');setFocusZone('games');announce('PortDeck · Início (Start + Select)');});},[]);
+  // Depois das boas-vindas o foco vai para a fileira de jogos, não para o botão do perfil no cabeçalho.
+  const focusShelf=useCallback(()=>{setFocusZone('games');requestAnimationFrame(()=>document.querySelector('.console-tile.active,[data-console-add]')?.focus({preventScroll:true}));},[]);
   const enterConsole=useCallback(()=>{if(!stateRef.current.introReady)return;setIntro(false);},[]);
   useEffect(()=>{const timer=setInterval(()=>setClock(new Date()),30000);return()=>clearInterval(timer);},[]);
   const announce=useCallback(message=>{setToast(message);clearTimeout(toastTimeout.current);toastTimeout.current=setTimeout(()=>setToast(''),4200);},[]);
@@ -143,6 +145,18 @@ function App(){
     }
     return()=>{active=false;};
   },[games]);
+  // Jogos sem capa mostram o ícone do próprio .exe; a chave inclui o caminho para refletir troca de executável.
+  const [exeIcons,setExeIcons]=useState({}),iconRequests=useRef(new Set());
+  useEffect(()=>{
+    if(!api?.icon)return;
+    for(const g of games){
+      const key=g.id+'|'+g.exe;
+      if(g.cover||!g.exe||iconRequests.current.has(key))continue;
+      iconRequests.current.add(key);
+      api.icon(g.id).then(src=>{if(src)setExeIcons(old=>({...old,[key]:src}));}).catch(()=>{});
+    }
+  },[games]);
+  const icons=useMemo(()=>Object.fromEntries(games.map(g=>[g.id,exeIcons[g.id+'|'+g.exe]]).filter(([,src])=>src)),[games,exeIcons]);
   const choose=useCallback((id)=>{if(!id)return;setSelected(id);sound('move',enabled);},[enabled]);
   const jump=useCallback(delta=>{const all=gamesRef.current;const old=stateRef.current.selected;const n=all.findIndex(g=>g.id===old);if(all.length){const next=all[(Math.max(0,n)+delta+all.length)%all.length];setSelected(next.id);sound('move',stateRef.current.enabled);}},[]);
   const play=useCallback(async(id)=>{const target=id||stateRef.current.selected;if(!target)return;sound('select',stateRef.current.enabled);try{if(!api)return announce('Prévia: execução disponível no PortDeck instalado.');await api.play(target);const found=gamesRef.current.find(g=>g.id===target);announce('Iniciando '+(found?.name||'jogo')+'...');}catch(e){fail(e);}},[announce,fail]);
@@ -331,7 +345,7 @@ function App(){
     <div className="layout">
       <header className="header"><button className="branding" onClick={()=>reveal('home')}><BrandMark/><span className="wordmark">PORT<span>DECK</span></span><em>PULSE</em></button><nav><button className={view==='home'?'on':''} onClick={()=>reveal('home')}>Início</button><button className={view==='library'?'on':''} onClick={()=>reveal('library')}>Biblioteca</button></nav><div className="head-right">
         <span className={'pad-status pad-'+controller.kind}><Icon name="controller" size={19}/>{controller.label}</span>
-        <PlayerProfiles startup={!intro}/><time className="console-clock">{clock.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</time>
+        <PlayerProfiles startup={!intro} onWelcomeDone={focusShelf}/><time className="console-clock">{clock.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</time>
         <button className="head-icon" title={muted?'Ativar efeitos sonoros':'Silenciar efeitos sonoros'} onClick={handleSound}><Icon name={muted?'mute':'volume'}/></button>
         <button className="head-icon" title="Tela cheia (F11)" onClick={()=>api?.toggleFullscreen()}><Icon name="fullscreen"/></button>
         <button className="head-icon close-app" title="Sair do PortDeck" onClick={()=>api?.closeWindow?.()}><Icon name="power"/></button>
@@ -339,7 +353,7 @@ function App(){
       <main>
         <AnimatePresence mode="wait">
           {view==='home'&&<motion.div key="home" className="home-console-view" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} transition={{duration:reduced?.01:.22}}>
-            <ConsoleHome games={games} game={game} art={art} selected={focusedId} zone={focusZone} actionIndex={actionIndex} onZone={setFocusZone} onAction={setActionIndex} onSelect={choose} onPlay={()=>play(focusedId)} onConfigure={()=>openEditor(focusedId)} onDetails={()=>setView('detail')} onAdd={add} onContext={openMenu} onMenu={openMenu}/>
+            <ConsoleHome games={games} game={game} art={art} icons={icons} selected={focusedId} zone={focusZone} actionIndex={actionIndex} onZone={setFocusZone} onAction={setActionIndex} onSelect={choose} onPlay={()=>play(focusedId)} onConfigure={()=>openEditor(focusedId)} onDetails={()=>setView('detail')} onAdd={add} onContext={openMenu} onMenu={openMenu}/>
           </motion.div>}
           {view==='detail'&&<motion.div key="detail" className="detail" initial={{opacity:0,x:70}} animate={{opacity:1,x:0}} exit={{opacity:0,x:-40}} transition={spring}>
             <button className="breadcrumb" onClick={()=>reveal('home')}><Icon name="back"/> Voltar à biblioteca</button>
@@ -353,7 +367,7 @@ function App(){
           {view==='library'&&<motion.div key="library" className="library" initial={{opacity:0,x:65}} animate={{opacity:1,x:0}} exit={{opacity:0,x:-35}} transition={{duration:.36}}>
             <div className="library-title"><div><div className="eyebrow">TODOS OS SEUS PORTS</div><h1>Biblioteca <span>{games.length}</span></h1></div><button className="action-primary" onClick={add}><Icon name="add" size={18}/> ADICIONAR</button></div>
             <label className="search"><Icon name="search"/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Pesquisar jogos..." autoComplete="off"/></label>
-            <div className="grid">{filtered.map(g=><Cover key={g.id} game={g} art={art} compact active={g.id===focusedId} onClick={()=>{choose(g.id);setView('detail');}}/>)}</div>
+            <div className="grid">{filtered.map(g=><Cover key={g.id} game={g} art={art} icon={icons[g.id]} compact active={g.id===focusedId} onClick={()=>{choose(g.id);setView('detail');}}/>)}</div>
             {!filtered.length&&<div className="no-results">{games.length?'Nenhum jogo encontrado.':'Sua biblioteca ainda está vazia.'}</div>}
           </motion.div>}
         </AnimatePresence>

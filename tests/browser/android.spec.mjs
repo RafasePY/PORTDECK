@@ -26,3 +26,28 @@ test('android: a library with games goes straight to the console after the profi
  await expect(page.locator('[data-player-dialog]')).toHaveCount(0);
  await expect(page.getByRole('heading',{name:'Adicionar aplicativo Android'})).toHaveCount(0);
 });
+const withGames=()=>localStorage.setItem('portdeck-android-library-v1',JSON.stringify(['Celeste','Hollow Knight'].map((name,i)=>({id:'a'+i,packageName:'com.example.a'+i,name,cover:'',banner:'',logo:'',playedSeconds:0,lastPlayed:null}))));
+test('android: arrow keys move through games right after the welcome profile closes',async({page})=>{
+ await page.addInitScript(withGames);
+ await page.goto(ANDROID);
+ await expect(page.getByRole('heading',{name:'Quem vai jogar?'})).toBeVisible({timeout:12000});
+ await page.keyboard.press('Escape');
+ await expect(page.locator('.console-tile.active')).toBeFocused();
+ await expect(page.locator('.console-tile.active')).toHaveAttribute('data-console-tile','a0');
+ await page.keyboard.press('ArrowRight');
+ await expect(page.locator('.console-tile.active')).toHaveAttribute('data-console-tile','a1');
+});
+test('android: notification settings explain access and preview a pop-up',async({page})=>{
+ await page.addInitScript(withGames);
+ await page.goto(ANDROID);
+ await expect(page.getByRole('heading',{name:'Quem vai jogar?'})).toBeVisible({timeout:12000});
+ await page.keyboard.press('Escape');
+ await page.getByRole('button',{name:'Notificações do tablet'}).click();
+ await expect(page.getByText('Acesso às notificações ainda não liberado')).toBeVisible();
+ await expect(page.getByRole('button',{name:'Liberar acesso'})).toBeVisible();
+ await page.getByRole('button',{name:'Ver exemplo'}).click();
+ const popup=page.locator('.ad-alert');
+ await expect(popup).toContainText('Assim chegam suas mensagens');
+ await page.getByRole('button',{name:'Dispensar notificação'}).click();
+ await expect(popup).toHaveCount(0);
+});

@@ -19,12 +19,12 @@ export function profileCommand(cmd){
 export default function PlayerProfiles({startup=false,onWelcomeDone}){
  const [data,setData]=useState(()=>{try{return readProfiles(localStorage);}catch{return defaults();}});
  const [open,setOpen]=useState(false),[draft,setDraft]=useState(null),[error,setError]=useState('');
- const trigger=useRef(null),dialog=useRef(null),welcomed=useRef(false),welcoming=useRef(false);
+ const trigger=useRef(null),dialog=useRef(null),welcomed=useRef(false),welcoming=useRef(false),skipRefocus=useRef(false);
  useEffect(()=>{if(startup&&!welcomed.current){welcomed.current=true;welcoming.current=true;setOpen(true);}},[startup]);
  const active=data.profiles.find(p=>p.id===data.activeId)||data.profiles[0];
  useEffect(()=>{document.documentElement.style.setProperty('--dashboard-accent',THEMES[active.theme].color);},[active.theme]);
  const commit=value=>{try{const saved=writeProfiles(localStorage,value);setData(saved);setError('');return true;}catch{setError('Não foi possível salvar. Verifique o espaço disponível e tente novamente.');return false;}};
- const close=()=>{setOpen(false);setDraft(null);setError('');if(welcoming.current){welcoming.current=false;onWelcomeDone?.();}};
+ const close=()=>{setOpen(false);setDraft(null);setError('');if(welcoming.current){welcoming.current=false;skipRefocus.current=true;onWelcomeDone?.();}};
  const show=()=>{try{setData(readProfiles(localStorage));setError('');}catch{setError('Os perfis salvos não puderam ser lidos. Nenhum dado foi substituído.');}setOpen(true);};
  useEffect(()=>{
  if(!open)return;
@@ -43,7 +43,7 @@ export default function PlayerProfiles({startup=false,onWelcomeDone}){
  e.stopImmediatePropagation();
  };
  window.addEventListener('keydown',key,true);
- return()=>{cancelAnimationFrame(frame);window.removeEventListener('keydown',key,true);before?.focus({preventScroll:true});};
+ return()=>{cancelAnimationFrame(frame);window.removeEventListener('keydown',key,true);if(skipRefocus.current)skipRefocus.current=false;else before?.focus({preventScroll:true});};
  },[open,draft?.id]);
  const save=e=>{
  e.preventDefault();const name=draft.name.trim();if(!name){setError('Digite um nome para continuar.');return;}

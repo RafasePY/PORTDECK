@@ -4,7 +4,7 @@ import {AnimatePresence,motion,useReducedMotion} from 'motion/react';
 const duration=s=>{const t=Math.max(0,Number(s)||0);const h=Math.floor(t/3600),m=Math.floor((t%3600)/60);return h? h+'h '+String(m).padStart(2,'0')+'min':m+'min';};
 const date=iso=>{if(!iso)return 'Ainda não jogado';const d=new Date(iso);return Number.isNaN(d.getTime())?'Ainda não jogado':d.toLocaleDateString('pt-BR');};
 const cardAnim={type:'spring',stiffness:360,damping:30};
-function GameTile({game,selected,src,onSelect,onContext}){
+function GameTile({game,selected,src,icon,onSelect,onContext}){
   const reduced=useReducedMotion();
   const timer=useRef(null),origin=useRef(null),longPressed=useRef(false);
   const cancel=()=>{if(timer.current)clearTimeout(timer.current);timer.current=null;origin.current=null;};
@@ -16,11 +16,11 @@ function GameTile({game,selected,src,onSelect,onContext}){
     onPointerMove={e=>{const a=origin.current;if(a&&Math.hypot(e.clientX-a.x,e.clientY-a.y)>12)cancel();}}
     onPointerUp={cancel} onPointerCancel={cancel}
     whileHover={reduced?{}:{y:-2}} whileTap={reduced?{}:{scale:.99}} transition={cardAnim}>
-    <span className="console-tile-art">{src?<img src={src} alt="" draggable="false"/>:<span className="console-tile-fallback"><strong>{game.name.slice(0,2).toUpperCase()}</strong></span>}</span>
+    <span className="console-tile-art">{src?<img src={src} alt="" draggable="false"/>:<span className="console-tile-fallback">{icon?<img className="console-tile-icon" src={icon} alt="" draggable="false"/>:<strong>{game.name.slice(0,2).toUpperCase()}</strong>}</span>}</span>
     <span className="console-tile-caption">{game.name}</span>
   </motion.button>;
 }
-export default function ConsoleHome({games,game,art,selected,onSelect,onPlay,onConfigure,onDetails,onAdd,onContext,onMenu,isAddSelected=false,onAddFocus,estimatedTime=false,zone='games',actionIndex=0,onZone,onAction}){
+export default function ConsoleHome({games,game,art,icons={},selected,onSelect,onPlay,onConfigure,onDetails,onAdd,onContext,onMenu,isAddSelected=false,onAddFocus,estimatedTime=false,zone='games',actionIndex=0,onZone,onAction}){
   const shelf=useRef(null),reduced=useReducedMotion();
   useEffect(()=>{
     const item=shelf.current?.querySelector(isAddSelected?'[data-console-add="true"]':'[data-console-tile].active');
@@ -33,7 +33,7 @@ export default function ConsoleHome({games,game,art,selected,onSelect,onPlay,onC
   return <div className="console-home">
     <section className="console-shelf" aria-label="Jogos cadastrados">
       <div className="console-shelf-scroll" ref={shelf}>
-        {games.map(g=><GameTile key={g.id} game={g} selected={g.id===selected} src={g.cover&&art[g.cover]} onSelect={id=>{onZone('games');onSelect(id);}} onContext={onContext}/>)}
+        {games.map(g=><GameTile key={g.id} game={g} selected={g.id===selected} src={g.cover&&art[g.cover]} icon={icons[g.id]} onSelect={id=>{onZone('games');onSelect(id);}} onContext={onContext}/>)}
         <button data-console-add="true" className={'console-add'+(isAddSelected?' console-add-selected':'')} aria-pressed={isAddSelected} onFocus={()=>onAddFocus?.()} onClick={onAdd} title="Adicionar port" aria-label="Adicionar port"><span>+</span><small>Adicionar</small></button>
       </div>
       <div className="console-shelf-progress">{games.length?String(Math.max(1,games.findIndex(g=>g.id===selected)+1)).padStart(2,'0')+' / '+String(games.length).padStart(2,'0'):'BIBLIOTECA VAZIA'}</div>

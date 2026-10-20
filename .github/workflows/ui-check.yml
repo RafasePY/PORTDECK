@@ -1,7 +1,7 @@
 name: Interface checks
 on:
   push:
-    branches: ["feature/portal-identity-v0.6"]
+    branches: ["feature/portal-identity-v0.6", "ccr-a064814d-udfijf"]
 jobs:
   browser:
     runs-on: ubuntu-latest

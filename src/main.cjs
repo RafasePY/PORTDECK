@@ -99,6 +99,13 @@ function registerHandlers() {
     try{return assetStore.read(cover);}
     catch(err){console.warn('PortDeck: imagem não carregada:',errorMessage(err));return '';}
   });
+  // Ícone embutido no .exe: aparece no lugar da capa enquanto o jogo não tem arte própria.
+  ipcMain.handle('games:icon', async (_event,id) => {
+    const g=db.find(id);
+    if(!g?.exe)return '';
+    try{const image=await app.getFileIcon(g.exe,{size:'large'});return image.isEmpty()?'':image.toDataURL();}
+    catch(err){console.warn('PortDeck: ícone do executável indisponível:',errorMessage(err));return '';}
+  });
   ipcMain.handle('window:close', () => {win?.close(); return true;});
   ipcMain.handle('window:toggleFullscreen', () => {win.setFullScreen(!win.isFullScreen());return win.isFullScreen();});
   ipcMain.handle('games:runningList', () => [...running.keys()]);

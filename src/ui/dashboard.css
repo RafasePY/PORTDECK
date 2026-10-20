@@ -141,3 +141,6 @@
  .shell .wallpaper.no-art:before{animation:none}
  .shell .console-tile,.shell .console-btn{transition:none}
 }
+/* Ícone do .exe quando o jogo ainda não tem capa: tamanho próximo do original para não borrar. */
+.console-tile-icon,.tile-exe-icon{position:relative;width:min(64px,42%);height:auto;aspect-ratio:1;object-fit:contain;image-rendering:auto;filter:drop-shadow(0 6px 14px #0009)}
+.tile-placeholder .tile-exe-icon{width:min(72px,40%)}

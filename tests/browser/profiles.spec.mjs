@@ -37,3 +37,27 @@ test('intro progress bar counts down exactly the auto-advance after preparation'
  await expect(bar).toHaveCount(1);
  expect(await bar.evaluate(el=>getComputedStyle(el).animationDuration)).toBe('3.9s');
 });
+const desktopLibrary=()=>{
+ const games=['Celeste','Hollow Knight','Doom 64'].map((name,i)=>({id:'g'+i,name,exe:'C:/Ports/'+i+'/play.exe',cover:'',banner:'',logo:'',playedSeconds:0,lastPlayed:new Date(Date.now()-i*86400000).toISOString()}));
+ const icon='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+ window.portdeck={list:async()=>games,running:async()=>[],onLibrary:()=>()=>{},onRunning:()=>()=>{},onHome:()=>()=>{},loadCover:async()=>'',icon:async id=>id==='g1'?icon:''};
+};
+test('arrow keys move through games right after the welcome profile closes',async({page})=>{
+ await page.addInitScript(desktopLibrary);
+ await page.goto('/');
+ await expect(page.getByRole('heading',{name:'Quem vai jogar?'})).toBeVisible({timeout:12000});
+ await page.keyboard.press('Escape');
+ await expect(page.locator('.console-tile.active')).toBeFocused();
+ const first=await page.locator('.console-tile.active').getAttribute('aria-label');
+ await page.keyboard.press('ArrowRight');
+ await expect(page.locator('.console-tile.active')).not.toHaveAttribute('aria-label',first);
+});
+test('games without a cover show the icon from their executable',async({page})=>{
+ await page.addInitScript(desktopLibrary);
+ await page.goto('/');
+ await expect(page.getByRole('heading',{name:'Quem vai jogar?'})).toBeVisible({timeout:12000});
+ await page.keyboard.press('Escape');
+ await expect(page.locator('[data-console-tile="g1"] .console-tile-icon')).toHaveCount(1);
+ await expect(page.locator('[data-console-tile="g0"] .console-tile-icon')).toHaveCount(0);
+ await expect(page.locator('[data-console-tile="g0"] .console-tile-fallback strong')).toHaveText('CE');
+});

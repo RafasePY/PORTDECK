@@ -14,6 +14,7 @@ contextBridge.exposeInMainWorld('portdeck',Object.freeze({
   chooseExecutable:()=>ipcRenderer.invoke('games:chooseExecutable'),
   suggestDirectExecutable:id=>ipcRenderer.invoke('games:suggestDirectExecutable',id),
   loadCover:path=>ipcRenderer.invoke('covers:load',path),
+  icon:id=>ipcRenderer.invoke('games:icon',id),
   toggleFullscreen:()=>ipcRenderer.invoke('window:toggleFullscreen'),
   closeWindow:()=>ipcRenderer.invoke('window:close'),
   running:()=>ipcRenderer.invoke('games:runningList'),
