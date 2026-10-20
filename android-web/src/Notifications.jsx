@@ -8,7 +8,7 @@ const readEnabled=()=>{try{return localStorage.getItem(POPUPS_KEY)!=='off';}catc
 
 /** Pop-ups estilo console para notificações do tablet. Só recebe algo depois que o usuário libera o acesso no Android. */
 export function useTabletNotifications({paused=false,onError}={}){
- const [granted,setGranted]=useState(null),[enabled,setEnabledState]=useState(readEnabled),[items,setItems]=useState([]);
+ const [granted,setGranted]=useState(null),[available,setAvailable]=useState(true),[enabled,setEnabledState]=useState(readEnabled),[items,setItems]=useState([]);
  const state=useRef({}),timers=useRef(new Map());
  state.current={enabled,paused};
  const dismiss=useCallback(key=>{clearTimeout(timers.current.get(key));timers.current.delete(key);setItems(xs=>xs.filter(x=>x.key!==key));},[]);
@@ -18,7 +18,7 @@ export function useTabletNotifications({paused=false,onError}={}){
   timers.current.set(item.key,setTimeout(()=>dismiss(item.key),DURATION));
   setItems(xs=>[item,...xs.filter(x=>x.key!==item.key)].slice(0,LIMIT));
  },[dismiss]);
- const refresh=useCallback(async()=>{try{const r=await Alerts.status();setGranted(!!r?.granted);}catch{setGranted(false);}},[]);
+ const refresh=useCallback(async()=>{try{const r=await Alerts.status();setAvailable(r?.available!==false);setGranted(!!r?.granted);}catch{setGranted(false);}},[]);
  useEffect(()=>{
   refresh();
   const onVisible=()=>{if(!document.hidden)refresh();};
@@ -37,7 +37,7 @@ export function useTabletNotifications({paused=false,onError}={}){
  const open=async item=>{dismiss(item.key);if(item.preview)return;try{await Alerts.open({key:item.key});}catch(e){onError?.(e.message||'Não foi possível abrir a notificação.');}};
  const openSettings=async()=>{try{await Alerts.openSettings();}catch(e){onError?.(e.message||'Não foi possível abrir as configurações.');}};
  const preview=()=>show({key:'preview-'+Date.now(),preview:true,app:'PortDeck',title:'Assim chegam suas mensagens',text:'Toque no aviso para abrir o aplicativo da notificação. Ele some sozinho em alguns segundos.'});
- return {granted,enabled,setEnabled,items,dismiss,open,openSettings,preview,refresh};
+ return {available,granted,enabled,setEnabled,items,dismiss,open,openSettings,preview,refresh};
 }
 
 export function NotificationPopups({items,onOpen,onDismiss}){

@@ -2,7 +2,9 @@ package com.portdeck.pulse.safe;
 
 import android.app.ActivityOptions;
 import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -26,7 +28,14 @@ public class PortDeckNotificationsPlugin extends Plugin {
   @PluginMethod
   public void status(PluginCall call) {
     JSObject result = new JSObject();
-    result.put("granted", NotificationManagerCompat.getEnabledListenerPackages(getContext()).contains(getContext().getPackageName()));
+    boolean available;
+    try {
+      getContext().getPackageManager().getServiceInfo(new ComponentName(getContext(), PortDeckNotificationService.class), 0);
+      available = true;
+    } catch(PackageManager.NameNotFoundException missing) { available = false; }
+    // APK padrão não declara o serviço; a interface esconde o sininho.
+    result.put("available", available);
+    result.put("granted", available && NotificationManagerCompat.getEnabledListenerPackages(getContext()).contains(getContext().getPackageName()));
     call.resolve(result);
   }
 

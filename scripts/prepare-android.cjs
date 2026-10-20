@@ -13,7 +13,10 @@ if(!manifest.includes('android.intent.action.CREATE_SHORTCUT')){
  if(manifest.includes('<queries>'))throw Error('Atualize as queries do AndroidManifest.xml manualmente.');
  manifest=manifest.replace('<application',queries+'\n    <application');
 }
-if(!manifest.includes('PortDeckNotificationService')){
+// O Play Protect bloqueia instalação fora da loja de apps com leitor de notificações (proteção contra fraude);
+// por isso ele só entra no APK opcional gerado com PORTDECK_NOTIFICATIONS=1.
+const withNotifications=process.env.PORTDECK_NOTIFICATIONS==='1';
+if(withNotifications&&!manifest.includes('PortDeckNotificationService')){
  // Leitor de notificações: inativo até o usuário liberar o acesso nas configurações do Android.
  const service='<service android:name="com.portdeck.pulse.safe.PortDeckNotificationService" android:label="PortDeck" android:exported="true" android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">\n'+
  '      <intent-filter><action android:name="android.service.notification.NotificationListenerService"/></intent-filter>\n'+
@@ -23,4 +26,4 @@ if(!manifest.includes('PortDeckNotificationService')){
 fs.writeFileSync(manifestPath,manifest);
 // Ícone PortDeck no lugar do ícone padrão do Capacitor.
 fs.cpSync(path.join('android-source','res'),path.join(base,'res'),{recursive:true});
-console.log('PortDeck Android: inicialização de jogos, ícone e pop-ups de notificação configurados, sem acesso à tela inicial do Android.');
+console.log('PortDeck Android: inicialização de jogos e ícone configurados'+(withNotifications?', com pop-ups de notificação':', sem leitor de notificações')+'; sem acesso à tela inicial do Android.');
