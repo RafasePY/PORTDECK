@@ -6,8 +6,12 @@ const certificate=execFileSync(tool('apksigner'),['verify','--print-certs',apk],
 const expected='ed639d51da1a290f39483493397b0f3831ab8ab298c0a973475bd03bf26ec765';
 if(!certificate.toLowerCase().includes(expected))throw Error('Assinatura incompatível com a 0.8.');
 const metadata=execFileSync(tool('aapt'),['dump','badging',apk],{encoding:'utf8'});
-if(!metadata.includes("package: name='com.portdeck.pulse.safe'")||!metadata.includes("versionCode='9000'")||!metadata.includes("versionName='0.9.0'"))throw Error('Identidade ou versão do APK incorreta.');
+// Versão esperada vem do package.json (mesma conta de prepare-android.cjs), para não precisar editar este arquivo a cada versão.
+const version=require('../package.json').version,[major,minor,patch]=version.split('.').map(Number),code=String(major*1000000+minor*1000+patch);
+if(!metadata.includes("package: name='com.portdeck.pulse.safe'")||!metadata.includes("versionCode='"+code+"'")||!metadata.includes("versionName='"+version+"'"))throw Error('Identidade ou versão do APK incorreta.');
 const manifest=execFileSync(tool('aapt'),['dump','xmltree',apk,'AndroidManifest.xml'],{encoding:'utf8'});
-if(manifest.includes('android.intent.category.HOME')||manifest.includes('BIND_ACCESSIBILITY_SERVICE'))throw Error('APK não é Safe.');
-if(manifest.includes('BIND_NOTIFICATION_LISTENER_SERVICE')!==(process.env.PORTDECK_NOTIFICATIONS==='1'))throw Error('Variante de notificações incorreta.');
-console.log('APK verificado: assinatura 0.8 preservada, com.portdeck.pulse.safe, versão 0.9.0 / 9000, variante Safe correta.');
+const complete=process.env.PORTDECK_NOTIFICATIONS==='1';
+if(manifest.includes('android.intent.category.HOME'))throw Error('APK não é Safe.');
+// Leitor de notificações e acessibilidade (Start+Select nos jogos) só podem existir no APK opcional "Completo".
+if(manifest.includes('BIND_NOTIFICATION_LISTENER_SERVICE')!==complete||manifest.includes('BIND_ACCESSIBILITY_SERVICE')!==complete)throw Error('Variante incorreta: recursos sensíveis fora do APK Completo ou ausentes nele.');
+console.log('APK verificado: assinatura 0.8 preservada, com.portdeck.pulse.safe, versão '+version+' / '+code+', variante '+(complete?'Completo':'padrão')+' correta.');

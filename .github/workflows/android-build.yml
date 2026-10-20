@@ -39,22 +39,22 @@ jobs:
       - name: Upload Android APK
         uses: actions/upload-artifact@v4
         with:
-          name: PortDeck-Android-Safe-v0.9-APK
+          name: PortDeck-Android-Safe-v1.0-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 30
-      - name: Add optional notification reader
+      - name: Add optional notification reader and in-game Start+Select (Completo)
         env:
           PORTDECK_NOTIFICATIONS: "1"
         run: node scripts/prepare-android.cjs
-      - name: Compile Android APK with notification pop-ups
+      - name: Compile Android APK Completo
         run: cd android && ./gradlew assembleDebug --no-daemon
       - name: Verify optional APK signature and manifest
         env:
           PORTDECK_NOTIFICATIONS: "1"
         run: node scripts/verify-apk.cjs android/app/build/outputs/apk/debug/app-debug.apk
-      - name: Upload Android APK with notification pop-ups
+      - name: Upload Android APK Completo
         uses: actions/upload-artifact@v4
         with:
-          name: PortDeck-Android-Safe-v0.9-Notificacoes-APK
+          name: PortDeck-Android-Safe-v1.0-Completo-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 30

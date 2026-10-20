@@ -25,6 +25,35 @@ public class PortDeckNotificationsPlugin extends Plugin {
 
   void deliver(JSObject data) { notifyListeners("notification", data); }
 
+  // Start + Select dentro do jogo (serviço de acessibilidade do APK Completo) reabre o PortDeck com este extra.
+  @Override protected void handleOnNewIntent(Intent intent) {
+    super.handleOnNewIntent(intent);
+    if(intent != null && intent.getBooleanExtra("portdeck.home", false)) notifyListeners("homeButton", new JSObject());
+  }
+
+  @PluginMethod
+  public void gamepadStatus(PluginCall call) {
+    JSObject result = new JSObject();
+    ComponentName service = new ComponentName(getContext(), PortDeckGamepadService.class);
+    boolean available;
+    try { getContext().getPackageManager().getServiceInfo(service, 0); available = true; }
+    catch(PackageManager.NameNotFoundException missing) { available = false; }
+    String enabled = Settings.Secure.getString(getContext().getContentResolver(), Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
+    result.put("available", available);
+    result.put("enabled", available && enabled != null && enabled.toLowerCase().contains(service.flattenToString().toLowerCase()));
+    call.resolve(result);
+  }
+
+  @PluginMethod
+  public void openGamepadSettings(PluginCall call) {
+    try {
+      Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
+      intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+      getContext().startActivity(intent);
+      call.resolve();
+    } catch(Exception error) { call.reject("Não foi possível abrir as configurações de acessibilidade."); }
+  }
+
   @PluginMethod
   public void status(PluginCall call) {
     JSObject result = new JSObject();

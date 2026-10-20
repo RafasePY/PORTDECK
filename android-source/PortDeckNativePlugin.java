@@ -1,6 +1,8 @@
 package com.portdeck.pulse.safe;
 
 import android.app.Activity;
+import android.app.ActivityManager;
+import android.content.Context;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -181,5 +183,16 @@ public class PortDeckNativePlugin extends Plugin {
       intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
       getContext().startActivity(intent);call.resolve();
     }catch(Exception e){call.reject("Não foi possível abrir as configurações: "+e.getMessage());}
+  }
+  // Fecha o jogo que o PortDeck abriu. Só funciona com o jogo em segundo plano (o PortDeck está na frente quando o jogador pede).
+  @PluginMethod
+  public void closeApp(PluginCall call){
+    String pkg=call.getString("packageName");
+    if(!validPackage(pkg)||pkg.equals(getContext().getPackageName())){call.reject("Pacote Android inválido.");return;}
+    try{
+      ActivityManager am=(ActivityManager)getContext().getSystemService(Context.ACTIVITY_SERVICE);
+      am.killBackgroundProcesses(pkg);
+      JSObject out=new JSObject();out.put("closed",true);call.resolve(out);
+    }catch(Exception e){call.reject("O Android não permitiu fechar este app: "+e.getMessage());}
   }
 }

@@ -40,7 +40,8 @@ Os testes de navegador usam `dist/` já compilado para o Windows: rode `npm run 
 - **Assinatura do APK:** todo APK é assinado com `android-source/portdeck-signing.keystore` (alias e senhas `portdeck`), injetada por `prepare-android.cjs`. É isso que permite instalar por cima. **Nunca troque, regenere ou remova essa chave**; se o build deixar de usá-la, o tablet volta a exigir desinstalar e perde os dados.
 - **Nunca quebrar dados do usuário:** `appId` Android `com.portdeck.pulse.safe` fixo; chaves de `localStorage` versionadas (`portdeck-android-library-v1`, `portdeck-player-profiles-v1`…); perfis v1 sem foto continuam válidos; a v0.1.2 é importada sem ser alterada. Oriente sempre a instalar o APK **por cima**, nunca desinstalar.
 - **Android "Safe":** sem categoria HOME, sem permissão de launcher padrão, sem atalhos da tela inicial, sem bateria do controle (removidos a pedido do dono).
-- **Play Protect (Brasil):** apps instalados fora da loja que declaram `NotificationListenerService` são bloqueados sem opção de continuar. Por isso o serviço só entra no manifest com `PORTDECK_NOTIFICATIONS=1` (APK opcional "Notificacoes"). Não adicione permissões sensíveis (SMS, acessibilidade, leitor de notificações) ao APK padrão.
+- **Play Protect (Brasil):** apps instalados fora da loja que declaram `NotificationListenerService` ou `AccessibilityService` são bloqueados sem opção de continuar. Por isso os dois (leitor de notificações e `PortDeckGamepadService`, o Start+Select dentro dos jogos) só entram no manifest com `PORTDECK_NOTIFICATIONS=1`, no APK opcional **"Completo"**. `scripts/verify-apk.cjs` derruba o CI se o APK padrão tiver qualquer um deles. Não adicione permissões sensíveis (SMS, acessibilidade, leitor de notificações) ao APK padrão. `KILL_BACKGROUND_PROCESSES` (Fechar jogo) é permissão comum e fica nos dois.
+- **Jogo aberto no Android:** o estado vem de `portdeck-android-running-v1` (o que o PortDeck abriu), não de detecção do sistema. O Android não informa a outro app quando um jogo é fechado pelos recentes; não prometa detecção exata.
 - **Windows:** nada de shell; executáveis iniciados diretamente. `nodeIntegration` desligado, CSP no `index.html` (imagens: `self data: blob:`).
 - **Perfis:** a troca de usuário **não abre sozinha** ao iniciar (pedido do dono). Entrada → início direto. A tela "Alternar usuário" só abre pelo avatar, pela tecla P ou por ↑ + A.
 - **Controle primeiro:** toda tela nova precisa funcionar com controle (direcional, A, B, Start), teclado e toque. Diálogos prendem o foco; ao fechar, o foco volta para um lugar que as setas consigam usar (normalmente a capa selecionada).
@@ -49,7 +50,7 @@ Os testes de navegador usam `dist/` já compilado para o Windows: rode `npm run 
 
 ## Fluxo de versões e CI
 - Cada versão nasce numa branch empilhada sobre a anterior e vira um PR **rascunho** apontando para a branch da versão anterior (cadeia #8 → #13 → …). A `main` ainda só tem o README inicial. Nada é mesclado antes do dono testar no aparelho.
-- Ao criar uma versão: atualize `version` no `package.json`, os nomes dos artefatos nos workflows (`PortDeck-Windows-vX`, `PortDeck-Android-Safe-vX-APK`, `...-Notificacoes-APK`) e **inclua a branch nova na lista `push.branches`** de `android-build.yml` e `ui-check.yml` (senão o APK não é gerado).
+- Ao criar uma versão: atualize `version` no `package.json`, os nomes dos artefatos nos workflows (`PortDeck-Windows-vX`, `PortDeck-Android-Safe-vX-APK`, `...-Completo-APK`) e **inclua a branch nova na lista `push.branches`** de `android-build.yml` e `ui-check.yml` (senão o APK não é gerado).
 - **Registro obrigatório de cada atualização** (o dono pediu, para outras IAs continuarem o trabalho). Crie `docs/PORTDECK_X.md` no modelo de [`docs/PORTDECK_0.8.md`](docs/PORTDECK_0.8.md):
   1. **Pedido do dono**, nas palavras dele, resumido.
   2. **O que mudou**, com causa, arquivos, componentes, classes CSS, props e chaves de armazenamento envolvidos, e o comportamento antes/depois.
@@ -58,12 +59,11 @@ Os testes de navegador usam `dist/` já compilado para o Windows: rode `npm run 
   5. **Pendências**: o que só dá para validar no aparelho.
 
   Atualize também a seção "Estado" deste arquivo e o README quando o comportamento visível mudar.
-- Workflows: `windows-build.yml` (instalador e portátil), `android-build.yml` (APK padrão + APK com notificações), `ui-check.yml` (unitários + build + Playwright).
+- Workflows: `windows-build.yml` (instalador e portátil), `android-build.yml` (APK padrão + APK Completo, ambos conferidos por `verify-apk.cjs`, que lê a versão do `package.json`), `ui-check.yml` (unitários + build + Playwright).
 - O Java nativo só é compilado no CI (não há Android SDK local): depois de mexer em `android-source/`, confira o workflow Android antes de dizer que está pronto.
 
-## Estado em 0.9 (out/2026)
-Pronto: tudo da 0.8, central inferior Home/Start+Select/toque; Jogos/Mídia com L1/R1 e categoria opcional preservada; foco de diálogos e capas ajustado; versionCode 9000, mesma chave fixa e appId; CI verifica assinatura/metadados/Safe das duas variantes. Registro: `docs/PORTDECK_0.9.md`, capturas em `docs/screenshots/0.9/`.
-Validação: 18 testes unitários e 19 de navegador. APIs Android simuladas no navegador; build/assinatura reais conferidos pelo workflow Android.
-Limites: Android mostra último app aberto, não detecta processo de jogo; Home depende do driver e do primeiro plano. Windows mostra processo acompanhado e abre detalhes; bateria indisponível sem API. Som controla efeitos do PortDeck.
-Pendente no aparelho: atualizar 0.8 → 0.9 mantendo dados, controle físico e notificações reais. Os prints novos citados no pedido não chegaram; não afirmar que foram corrigidos.
-Ideia futura: capas automáticas por nome (exige API licenciada e confirmação do usuário).
+## Estado em 1.0 (out/2026)
+Pronto: tudo da 0.9 + navegação por controle com foco visível (`pad-nav`) na central, na lista de apps e nos diálogos; central começa no primeiro cartão; selo "Em execução", Voltar ao jogo e **Fechar jogo** (Android `closeApp`/`killBackgroundProcesses`, Windows `beginClose`); Start+Select dentro dos jogos no APK Completo (`PortDeckGamepadService`, abre a central ao voltar); nome longo não estica a capa. versionCode 1000000, mesma chave. Registro: `docs/PORTDECK_1.0.md`, capturas em `docs/screenshots/1.0/`.
+Validação: 18 testes unitários e 24 de navegador (controle simulado via `navigator.getGamepads`). Java novo só compila no CI.
+Pendente no aparelho: atualizar 0.9 → 1.0 por cima, controle físico na central e na lista de apps, Fechar jogo no Minecraft, Start+Select dentro do jogo no APK Completo (ativar em Acessibilidade).
+Ideias futuras: capas automáticas por nome (exige API licenciada e confirmação do usuário); detecção real de jogo aberto via acessibilidade no Completo.

@@ -128,3 +128,4 @@ button{touch-action:manipulation}
 .ad-alert-actions button:not(.action-primary){background:#ffffff10;border:1px solid #cfe3ff40;color:#eef6ff}
 .ad-alert-actions button:not(.action-primary):focus-visible{outline:3px solid #fff;outline-offset:3px}
 .ad-alert-settings small{color:#9db4d0}
+.ad-gamepad-settings{margin-top:22px;padding-top:18px;border-top:1px solid #ffffff22}.ad-gamepad-settings h3{margin:0;font-size:16px;font-weight:600;color:#fff}

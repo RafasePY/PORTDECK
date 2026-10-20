@@ -40,6 +40,34 @@ export function useTabletNotifications({paused=false,onError}={}){
  return {available,granted,enabled,setEnabled,items,dismiss,open,openSettings,preview,refresh};
 }
 
+/** Start + Select dentro dos jogos (APK Completo): estado do serviço de acessibilidade e aviso de "voltei ao PortDeck". */
+export function useGamepadAccess({onHome}={}){
+ const [state,setState]=useState({available:false,enabled:false}),home=useRef(onHome);home.current=onHome;
+ const refresh=useCallback(async()=>{try{const r=await Alerts.gamepadStatus();setState({available:!!r?.available,enabled:!!r?.enabled});}catch{setState({available:false,enabled:false});}},[]);
+ useEffect(()=>{
+  refresh();
+  const onVisible=()=>{if(!document.hidden)refresh();};
+  document.addEventListener('visibilitychange',onVisible);
+  let handle,alive=true;
+  try{Promise.resolve(Alerts.addListener('homeButton',()=>home.current?.())).then(h=>{if(alive)handle=h;else h?.remove?.();}).catch(()=>{});}catch{}
+  return()=>{alive=false;handle?.remove?.();document.removeEventListener('visibilitychange',onVisible);};
+ },[refresh]);
+ const openSettings=async()=>{try{await Alerts.openGamepadSettings();}catch{}};
+ return {...state,openSettings};
+}
+
+export function GamepadAccessSettings({available,enabled,openSettings}){
+ if(!available)return null;
+ return <div className="ad-alert-settings ad-gamepad-settings">
+  <h3>Start + Select dentro dos jogos</h3>
+  <p>Com um jogo aberto, aperte <b>Start + Select</b> (ou o botão Home do controle) para voltar ao PortDeck e abrir a central, como o botão PS.</p>
+  <p className={'ad-alert-state'+(enabled?' on':'')}>{enabled?'✓ Ativado':'Ainda não ativado'}</p>
+  {!enabled&&<p className="ad-alert-help">Toque em Ativar → <b>Apps instalados</b> → <b>PortDeck · Start + Select</b> → ligar. Se aparecer "configuração restrita": Configurações → Apps → PortDeck Safe → ⋮ → Permitir configurações restritas.</p>}
+  <div className="ad-alert-actions"><button type="button" className={enabled?'':'action-primary'} onClick={openSettings}>{enabled?'Gerenciar':'Ativar'}</button></div>
+  <small>O PortDeck só observa os botões Start, Select e Home do controle e qual app está aberto. Não lê a tela nem o que você digita.</small>
+ </div>;
+}
+
 export function NotificationPopups({items,onOpen,onDismiss}){
  return <div className="ad-alerts" aria-live="polite">
   <AnimatePresence initial={false}>{items.map(item=><motion.div layout key={item.key} className="ad-alert" initial={{opacity:0,x:40}} animate={{opacity:1,x:0}} exit={{opacity:0,x:40}} transition={{duration:.28}}>

@@ -1,4 +1,4 @@
-import ControlCenter,{LibraryTabs,categoryOf,centerCommand,useDialogFocus,dialogCommand} from './components/ControlCenter.jsx';
+import ControlCenter,{LibraryTabs,categoryOf,centerCommand,useDialogFocus,dialogCommand,markPad} from './components/ControlCenter.jsx';
 import PlayerProfiles,{profileCommand} from './components/PlayerProfiles.jsx';
 import React,{useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import{createRoot}from'react-dom/client';
@@ -284,7 +284,7 @@ function App(){
       if(pad){
         const down=n=>Boolean(pad.buttons[n]?.pressed);
         // Standard mapping: centro 16. Alguns drivers e Steam Input podem ocultar esse botão.
-        const cmd=comboCommand(pad.buttons,pad.axes);
+        const cmd=comboCommand(pad.buttons,pad.axes);if(cmd)markPad();
         if(document.querySelector('[data-player-dialog]')){
           if(cmd&&(cmd!==prior||(['left','right','up','down'].includes(cmd)&&performance.now()-stamp>240))){stamp=performance.now();profileCommand(cmd);}prior=cmd;
         }else if(st.intro){
@@ -362,7 +362,7 @@ function App(){
       <main>
         <AnimatePresence mode="wait">
           {view==='home'&&<motion.div key="home" className="home-console-view" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} transition={{duration:reduced?.01:.22}}>
-            <ConsoleHome category={tab} games={visible} game={game} art={art} icons={icons} selected={focusedId} zone={focusZone} actionIndex={actionIndex} onZone={setFocusZone} onAction={setActionIndex} onSelect={choose} onPlay={()=>play(focusedId)} onConfigure={()=>openEditor(focusedId)} onDetails={()=>setView('detail')} onAdd={add} onContext={openMenu} onMenu={openMenu}/>
+            <ConsoleHome runningIds={running} category={tab} games={visible} game={game} art={art} icons={icons} selected={focusedId} zone={focusZone} actionIndex={actionIndex} onZone={setFocusZone} onAction={setActionIndex} onSelect={choose} onPlay={()=>play(focusedId)} onConfigure={()=>openEditor(focusedId)} onDetails={()=>setView('detail')} onAdd={add} onContext={openMenu} onMenu={openMenu}/>
           </motion.div>}
           {view==='detail'&&<motion.div key="detail" className="detail" initial={{opacity:0,x:70}} animate={{opacity:1,x:0}} exit={{opacity:0,x:-40}} transition={spring}>
             <button className="breadcrumb" onClick={()=>reveal('home')}><Icon name="back"/> Voltar à biblioteca</button>
@@ -387,7 +387,7 @@ function App(){
     <AnimatePresence>{closing&&closingGame&&<CloseGameOverlay key={closing.id} game={closingGame} phase={closing.phase} onCancel={()=>setClosing(null)} onRequest={()=>requestClose(false)} onForce={()=>requestClose(true)}/>}</AnimatePresence>
     <AnimatePresence>{editing&&<EditModal key={editing.id} game={editing} art={art} onClose={()=>setEditing(null)} onSave={save} onDelete={remove} onLaunch={launch} onBrowse={()=>api?.chooseExecutable?.()} onImage={kind=>api?.importArt?.(editing.id,kind)}/>}</AnimatePresence>
     <AnimatePresence>{toast&&<motion.div className="toast" initial={{opacity:0,y:25}} animate={{opacity:1,y:0}} exit={{opacity:0,y:16}} role="status">{toast}</motion.div>}</AnimatePresence>
-    <ControlCenter enabled={!intro} game={games.find(g=>running.includes(g.id))} onGame={g=>{setTab(categoryOf(g));setSelected(g.id);setView('detail');}} muted={muted} onSound={handleSound} onExit={()=>api?.closeWindow?.()} onRestore={focusShelf}/>
+    <ControlCenter enabled={!intro} game={games.find(g=>running.includes(g.id))} onCloseGame={g=>beginClose(g.id)} onGame={g=>{setTab(categoryOf(g));setSelected(g.id);setView('detail');}} muted={muted} onSound={handleSound} onExit={()=>api?.closeWindow?.()} onRestore={focusShelf}/>
     <IntroScreen open={intro} ready={introReady} onEnter={enterConsole} controller={controller} muted={muted}/>
   </div>;
 }
