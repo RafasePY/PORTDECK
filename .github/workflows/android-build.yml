@@ -1,7 +1,7 @@
 name: Android APK
 on:
   push:
-    branches: ["feature/android-tablet-v0.1", "feature/android-v0.1.1-shortcuts-nintendo"]
+    branches: ["feature/android-tablet-v0.1", "feature/android-v0.1.1-shortcuts-nintendo", "feature/android-v0.1.2-home-shortcuts-battery"]
     paths-ignore: ["**/*.md"]
   pull_request:
     branches: ["feature/pulse-v0.4.2-identity-controls"]
@@ -37,6 +37,6 @@ jobs:
       - name: Upload Android APK
         uses: actions/upload-artifact@v4
         with:
-          name: PortDeck-Android-v0.1.1-Beta-APK
+          name: PortDeck-Android-v0.1.2-Preview-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 30

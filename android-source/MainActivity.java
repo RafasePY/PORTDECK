@@ -1,10 +1,11 @@
-package com.portdeck.pulse.beta;
+package com.portdeck.pulse.preview;
 import android.os.Bundle;
 import android.view.View;
 import com.getcapacitor.BridgeActivity;
 public class MainActivity extends BridgeActivity {
   @Override public void onCreate(Bundle state) {
     registerPlugin(PortDeckNativePlugin.class);
+    registerPlugin(PortDeckPlatformPlugin.class);
     super.onCreate(state);
     // Interface em tela cheia; a barra do sistema reaparece com um gesto.
     getWindow().getDecorView().setSystemUiVisibility(
