@@ -21,8 +21,8 @@
 .shell .head-icon:hover{background:#ffffff16}
 .shell .pad-status{font-size:11px;color:#bed0e7}
 .shell .console-clock{font-weight:400;font-size:15px}
-.shell .console-shelf{--tile:clamp(112px,14.5vh,182px);height:calc(var(--tile) + 67px);padding:13px 0 0;flex-shrink:0}
-.shell .console-shelf-scroll{align-items:flex-start;gap:12px;padding:7px 8px 20px;margin-left:-8px;scroll-padding-inline:10px}
+.shell .console-shelf{--tile:clamp(112px,14.5vh,182px);height:calc(var(--tile) + 82px);padding:13px 0 0;flex-shrink:0}
+.shell .console-shelf-scroll{align-items:flex-start;gap:12px;padding:7px 8px 7px;margin-left:-8px;scroll-padding-inline:10px}
 .shell .console-tile{flex:0 0 var(--tile);height:calc(var(--tile) + 28px);gap:10px;transition:flex-basis .22s ease,opacity .2s ease}
 .shell .console-tile.active{flex-basis:calc(var(--tile) + 26px);height:calc(var(--tile) + 54px)}
 .shell .console-tile .console-tile-art{width:100%;flex:none;height:auto;aspect-ratio:1;border-radius:2px;border:1px solid #dceaff38;box-shadow:0 8px 20px #00102744}
@@ -123,7 +123,7 @@
  .shell .console-btn{padding:0 14px;min-width:0!important;min-height:44px;font-size:12px}
  .shell .console-metadata{gap:10px;margin-bottom:16px;font-size:11px}
  .shell .statusbar>small{display:none}.shell .statusbar{font-size:10px}
- .android-shell .ad-controller-setting{display:none}
+ .android-shell .ad-controller-setting select{max-width:85px}
  .player-shade{padding:12px}.player-panel{padding:22px}
 }
 @media(max-height:650px){
