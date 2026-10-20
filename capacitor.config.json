@@ -1,6 +1,6 @@
 {
-  "appId": "com.portdeck.pulse.preview",
-  "appName": "PortDeck Preview",
+  "appId": "com.portdeck.pulse.safe",
+  "appName": "PortDeck Safe",
   "webDir": "dist-android",
   "plugins": {
     "SplashScreen": {

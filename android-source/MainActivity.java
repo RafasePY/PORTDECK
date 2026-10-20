@@ -1,4 +1,4 @@
-package com.portdeck.pulse.preview;
+package com.portdeck.pulse.safe;
 import android.os.Bundle;
 import android.view.View;
 import com.getcapacitor.BridgeActivity;
