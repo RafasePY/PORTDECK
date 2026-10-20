@@ -16,15 +16,15 @@ export function profileCommand(cmd){
  }else if(cmd==='accept'&&root.contains(document.activeElement))document.activeElement.click();
  return true;
 }
-export default function PlayerProfiles({startup=false,onChosen}){
+export default function PlayerProfiles({startup=false,onWelcomeDone}){
  const [data,setData]=useState(()=>{try{return readProfiles(localStorage);}catch{return defaults();}});
  const [open,setOpen]=useState(false),[draft,setDraft]=useState(null),[error,setError]=useState('');
- const trigger=useRef(null),dialog=useRef(null),welcomed=useRef(false);
- useEffect(()=>{if(startup&&!welcomed.current){welcomed.current=true;setOpen(true);}},[startup]);
+ const trigger=useRef(null),dialog=useRef(null),welcomed=useRef(false),welcoming=useRef(false);
+ useEffect(()=>{if(startup&&!welcomed.current){welcomed.current=true;welcoming.current=true;setOpen(true);}},[startup]);
  const active=data.profiles.find(p=>p.id===data.activeId)||data.profiles[0];
  useEffect(()=>{document.documentElement.style.setProperty('--dashboard-accent',THEMES[active.theme].color);},[active.theme]);
  const commit=value=>{try{const saved=writeProfiles(localStorage,value);setData(saved);setError('');return true;}catch{setError('Não foi possível salvar. Verifique o espaço disponível e tente novamente.');return false;}};
- const close=()=>{setOpen(false);setDraft(null);setError('');};
+ const close=()=>{setOpen(false);setDraft(null);setError('');if(welcoming.current){welcoming.current=false;onWelcomeDone?.();}};
  const show=()=>{try{setData(readProfiles(localStorage));setError('');}catch{setError('Os perfis salvos não puderam ser lidos. Nenhum dado foi substituído.');}setOpen(true);};
  useEffect(()=>{
  if(!open)return;
@@ -68,7 +68,7 @@ export default function PlayerProfiles({startup=false,onChosen}){
  <footer><button type="button" onClick={()=>setDraft(null)}>Cancelar</button><button className="player-primary" type="submit">Salvar perfil</button></footer>
  </form>:<>
  <div className="player-list">{data.profiles.map(p=><div key={p.id} className="player-row">
- <button className="player-select" aria-pressed={p.id===active.id} onClick={()=>{if(commit({...data,activeId:p.id})){close();onChosen?.(p);}}}><span className="player-avatar" style={{background:THEMES[p.theme].color}}>{p.photo?<img src={p.photo} alt=""/>:p.avatar}</span><span><strong>{p.name}</strong><small>{p.id===active.id?'Perfil atual':'Entrar neste perfil'}</small></span><span className="player-check">{p.id===active.id?'✓':'›'}</span></button>
+ <button className="player-select" aria-pressed={p.id===active.id} onClick={()=>{if(commit({...data,activeId:p.id}))close();}}><span className="player-avatar" style={{background:THEMES[p.theme].color}}>{p.photo?<img src={p.photo} alt=""/>:p.avatar}</span><span><strong>{p.name}</strong><small>{p.id===active.id?'Perfil atual':'Entrar neste perfil'}</small></span><span className="player-check">{p.id===active.id?'✓':'›'}</span></button>
  <button className="player-edit" aria-label={'Editar perfil de '+p.name} onClick={()=>setDraft({...p})}>Editar</button>
  </div>)}</div>
  <button className="player-create" disabled={data.profiles.length>=12} onClick={()=>setDraft({id:crypto.randomUUID(),name:'',avatar:AVATARS[data.profiles.length%AVATARS.length],theme:'ocean'})}>＋ Criar perfil</button>

@@ -29,3 +29,11 @@ test('reduced motion and keyboard escape remain usable',async({page})=>{
  await page.keyboard.press('p');
  await expect(page.locator('[data-player-dialog]')).toBeVisible();
 });
+test('intro progress bar counts down exactly the auto-advance after preparation',async({page})=>{
+ await page.goto('/');
+ const bar=page.locator('.portal-intro-progress i');
+ await expect(bar).toHaveCount(0);
+ await expect(page.getByRole('button',{name:/Pular abertura/})).toBeEnabled();
+ await expect(bar).toHaveCount(1);
+ expect(await bar.evaluate(el=>getComputedStyle(el).animationDuration)).toBe('3.9s');
+});

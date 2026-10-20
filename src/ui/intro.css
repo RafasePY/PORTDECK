@@ -17,7 +17,7 @@
 .portal-intro-controls button:focus-visible{outline:2px solid #fff;outline-offset:4px}
 .portal-intro-controls span{margin-left:14px}
 .portal-intro-progress{position:absolute;bottom:0;left:0;right:0;height:2px;background:#ffffff06}
-.portal-intro-progress i{display:block;width:100%;height:100%;background:linear-gradient(90deg,#24518c,#bddfff);transform-origin:left;animation:portal-progress 4.7s linear both}
+.portal-intro-progress i{display:block;width:100%;height:100%;background:linear-gradient(90deg,#24518c,#bddfff);transform-origin:left;animation:portal-progress 3.9s linear both}
 .player-avatar{overflow:hidden}.player-avatar img{width:100%;height:100%;object-fit:cover;display:block}
 .profile-photo-editor{margin-bottom:24px}
 .photo-actions{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}

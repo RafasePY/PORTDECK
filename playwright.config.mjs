@@ -1,2 +1,2 @@
 import {defineConfig} from '@playwright/test';
-export default defineConfig({testDir:'./tests/browser',timeout:30000,use:{baseURL:'http://127.0.0.1:4173',headless:true},webServer:{command:'npx vite preview --host 127.0.0.1 --port 4173',port:4173,reuseExistingServer:false}});
+export default defineConfig({testDir:'./tests/browser',timeout:30000,use:{baseURL:'http://127.0.0.1:4173',headless:true},webServer:[{command:'npx vite preview --host 127.0.0.1 --port 4173',port:4173,reuseExistingServer:false},{command:'npx vite build --config vite.android.config.mjs && npx vite preview --config vite.android.config.mjs --host 127.0.0.1 --port 4174',port:4174,reuseExistingServer:false,timeout:120000}]});

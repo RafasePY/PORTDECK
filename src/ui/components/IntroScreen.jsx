@@ -1,6 +1,7 @@
 import React,{useEffect,useRef,useState} from 'react';
 import {AnimatePresence,motion,useReducedMotion} from 'motion/react';
 import BrandMark from './BrandMark.jsx';
+const AUTO_MS=3900,AUTO_REDUCED_MS=500;
 function sonicLogo(){
  try{
  const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return;
@@ -19,7 +20,7 @@ export default function IntroScreen({open,ready,onEnter,controller,muted:externa
  const [localMuted,setLocalMuted]=useState(()=>{try{return localStorage.getItem('portdeck-sound')==='off';}catch{return false;}});
  const muted=externalMuted??localMuted;
  enter.current=onEnter;
- useEffect(()=>{if(!open||!ready)return;leaving.current=false;const timer=setTimeout(()=>{leaving.current=true;enter.current();},reduced?500:3900);return()=>clearTimeout(timer);},[open,ready,reduced]);
+ useEffect(()=>{if(!open||!ready)return;leaving.current=false;const timer=setTimeout(()=>{leaving.current=true;enter.current();},reduced?AUTO_REDUCED_MS:AUTO_MS);return()=>clearTimeout(timer);},[open,ready,reduced]);
  const proceed=()=>{if(!ready||leaving.current)return;leaving.current=true;if(!muted&&!played.current){played.current=true;sonicLogo();}enter.current();};
  const toggle=()=>{if(onToggleSound){onToggleSound();return;}const next=!localMuted;setLocalMuted(next);try{localStorage.setItem('portdeck-sound',next?'off':'on');}catch{}if(!next)sonicLogo();};
  return <AnimatePresence>{open&&<motion.section className={'portal-intro'+(reduced?' portal-still':'')} initial={{opacity:1}} exit={{opacity:0,scale:reduced?1:1.035}} transition={{duration:reduced?.05:.45}} aria-label="Abertura do PortDeck">
@@ -27,6 +28,6 @@ export default function IntroScreen({open,ready,onEnter,controller,muted:externa
  <div className="portal-reveal"><div className="portal-light" aria-hidden="true"/><BrandMark large animated={!reduced}/>
  <div className="portal-title">PORT<span>DECK</span></div><div className="portal-tagline">SEU MUNDO. SEU JOGO.</div></div>
  <div className="portal-intro-controls"><button type="button" onClick={toggle} aria-pressed={!muted}>{muted?'Som desligado':'Som ligado'}</button><button type="button" disabled={!ready} onClick={proceed}>{ready?'Pular abertura':'Preparando…'} <span aria-hidden="true">›</span></button></div>
- <div className="portal-intro-progress" aria-hidden="true"><i/></div>
+ <div className="portal-intro-progress" aria-hidden="true">{ready&&<i style={{animationDuration:AUTO_MS+'ms'}}/>}</div>
  </motion.section>}</AnimatePresence>;
 }
