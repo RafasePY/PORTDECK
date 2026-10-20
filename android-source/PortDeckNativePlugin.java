@@ -23,7 +23,7 @@ import java.io.ByteArrayOutputStream;
 @CapacitorPlugin(name = "PortDeckNative")
 public class PortDeckNativePlugin extends Plugin {
     private boolean validPackage(String value) {
-      return value != null && value.matches("[A-Za-z][A-Za-z0-9_]*(\\\\.[A-Za-z][A-Za-z0-9_]*)+");
+      return value != null && value.matches("[A-Za-z0-9_]+[.][A-Za-z0-9_.]+") && !value.contains("..");
     }
     private String iconToData(Drawable drawable) {
       try {
