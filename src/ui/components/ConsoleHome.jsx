@@ -5,7 +5,15 @@ const duration=s=>{const t=Math.max(0,Number(s)||0);const h=Math.floor(t/3600),m
 const date=iso=>{if(!iso)return 'Ainda não jogado';const d=new Date(iso);return Number.isNaN(d.getTime())?'Ainda não jogado':d.toLocaleDateString('pt-BR');};
 const cardAnim={type:'spring',stiffness:360,damping:30};
 function GameTile({game,selected,src,onSelect,onContext}){
-  return <motion.button type="button" className={'console-tile'+(selected?' active':'')} aria-label={'Selecionar '+game.name} aria-pressed={selected} data-console-tile={game.id} onClick={()=>onSelect(game.id)} onContextMenu={e=>{e.preventDefault();onContext(game.id,e.clientX,e.clientY);}}
+  const timer=useRef(null),origin=useRef(null),longPressed=useRef(false);
+  const cancel=()=>{if(timer.current)clearTimeout(timer.current);timer.current=null;origin.current=null;};
+  useEffect(()=>cancel,[]);
+  return <motion.button type="button" className={'console-tile'+(selected?' active':'')} aria-label={'Selecionar '+game.name} aria-pressed={selected} data-console-tile={game.id}
+    onClick={e=>{if(longPressed.current){longPressed.current=false;e.preventDefault();return;}onSelect(game.id);}}
+    onContextMenu={e=>{e.preventDefault();if(longPressed.current)return;cancel();onContext(game.id,e.clientX,e.clientY);}}
+    onPointerDown={e=>{if(e.pointerType!=='touch')return;longPressed.current=false;origin.current={x:e.clientX,y:e.clientY};timer.current=setTimeout(()=>{longPressed.current=true;onContext(game.id,e.clientX,e.clientY);},560);}}
+    onPointerMove={e=>{const a=origin.current;if(a&&Math.hypot(e.clientX-a.x,e.clientY-a.y)>12)cancel();}}
+    onPointerUp={cancel} onPointerCancel={cancel}
     whileHover={{scale:1.055,y:-4}} whileTap={{scale:.97}} transition={cardAnim}>
     <span className="console-tile-art">{src?<img src={src} alt="" draggable="false"/>:<span className="console-tile-fallback"><strong>{game.name.slice(0,2).toUpperCase()}</strong></span>}</span>
     <span className="console-tile-caption">{game.name}</span>
