@@ -1,5 +1,5 @@
 import React from 'react';
-export const layoutFromDevice=(device,override)=>override&&override!=='auto'?override:(device?.kind||'touch');
+export const layoutFromDevice=(device,override)=>override&&override!=='auto'?override:(device?.kind==='keyboard'||!device?.kind?'touch':device.kind);
 const keyMap={
   xbox:{accept:'A',back:'B',options:'≡',home:'⊞'},
   xinput:{accept:'A',back:'B',options:'≡',home:'⊞'},
