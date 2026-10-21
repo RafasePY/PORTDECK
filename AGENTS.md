@@ -63,8 +63,8 @@ Os testes de navegador usam `dist/` já compilado para o Windows: rode `npm run 
 - Workflows: `windows-build.yml` (instalador e portátil), `android-build.yml` (APK padrão + APK Completo, ambos conferidos por `verify-apk.cjs`, que lê a versão do `package.json`), `ui-check.yml` (unitários + build + Playwright).
 - O Java nativo só é compilado no CI (não há Android SDK local): depois de mexer em `android-source/`, confira o workflow Android antes de dizer que está pronto.
 
-## Estado em 1.1 (out/2026)
-Pronto: tudo da 1.0 + **Fechar jogo de verdade**: no Completo, `PortDeckGamepadService` aperta "Forçar parada" nas Configurações (lê a tela só nesse momento); no APK normal, abre Informações do app para o toque manual. Start+Select usa `MainActivity.resumed`, trata abertura a frio (`consumeHome`) e tem diagnóstico (último botão, serviço ativo) e pedido de isenção de bateria (só no Completo). versionCode 1001000. Registro: `docs/PORTDECK_1.1.md`.
-Validação: 18 unitários e 28 de navegador. A automação da One UI só se valida no tablet.
-Pendente no aparelho: Fechar jogo automático no Minecraft; Start+Select após 10–20 min com bateria sem restrição. O dono já liberou "Permitir configurações restritas" (necessário para ativar acessibilidade e notificações em app fora da loja).
-Ideias futuras: capas automáticas por nome (exige API licenciada e confirmação do usuário).
+## Estado em 1.2 (out/2026)
+Pronto: tudo da 1.1 (Start+Select validado como estável no tablet após liberar bateria; horas contando) + ícone de toque do dono (`android-web/src/assets/touch-hint.png`); Fechar jogo robusto (CLEAR_TASK, confere o nome do app, confirma só no diálogo, token por tentativa, diagnóstico `lastClose`); pesquisa da fileira só da aba atual (Y/△) e cartão Biblioteca no fim da fileira com pesquisa geral; horas por usuário no Android (`playedBy[profileId]`, Windows só total); backup/restauração Android (`Backup.jsx`, `saveBackup` em Download/PortDeck); sons compartilhados `src/ui/sound.mjs`. versionCode 1002000. Registro: `docs/PORTDECK_1.2.md`.
+Validação: 18 unitários e 34 de navegador.
+Pendente no aparelho: Fechar jogo repetido; backup/restauração real; Windows inteiro desde a 0.7 ainda não testado em PC.
+Ideias futuras: horas por usuário no Windows; estatísticas/troféus; capas automáticas por nome (API licenciada + confirmação).

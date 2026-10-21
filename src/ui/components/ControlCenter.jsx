@@ -1,4 +1,5 @@
 import React,{useEffect,useRef,useState} from 'react';
+import {playSound} from '../sound.mjs';
 export const categoryOf=g=>g?.category==='media'?'media':'games';
 export function LibraryTabs({value,onChange,label='Biblioteca'}){return <nav className="library-tabs" aria-label={label}>{[['games','Jogos'],['media','Mídia']].map(([id,name])=><button type="button" key={id} aria-pressed={value===id} className={value===id?'on':''} onClick={()=>onChange(id)}>{name}</button>)}</nav>;}
 // Campos de texto ficam fora da navegação por controle: focar um deles abre o teclado do tablet.
@@ -12,6 +13,7 @@ export default function ControlCenter({enabled,game,label='Em execução',onGame
  const [open,setOpen]=useState(false),[exit,setExit]=useState(false),panel=useRef(null),latest=useRef({});latest.current={open,enabled};
  const close=()=>{setOpen(false);setExit(false);requestAnimationFrame(()=>{onRestore?.();document.querySelector('.console-tile.active,[data-console-add]')?.focus({preventScroll:true});});};
  // Começa no primeiro cartão (jogo aberto ou Alternar usuário), nunca no × de fechar.
+ useEffect(()=>{if(open)playSound('open');},[open]);
  useEffect(()=>{if(open)(panel.current?.querySelector('.center-items button:not(:disabled),.center-exit button')||panel.current?.querySelector('button'))?.focus();},[open,exit]);
  useEffect(()=>{const key=e=>{if(!latest.current.enabled)return;const p=panel.current;if(e.key==='Home'&&!document.querySelector('[role="dialog"]:not([data-control-center])')){e.preventDefault();e.stopImmediatePropagation();if(latest.current.open)close();else setOpen(true);return;}if(!p)return;e.stopImmediatePropagation();if(e.key==='Escape'){e.preventDefault();close();}else if(e.key==='Tab'||['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();const xs=[...p.querySelectorAll('button:not(:disabled)')],i=xs.indexOf(document.activeElement),back=e.shiftKey||['ArrowLeft','ArrowUp'].includes(e.key);xs[(i+(back?-1:1)+xs.length)%xs.length]?.focus();}};window.addEventListener('keydown',key,true);return()=>window.removeEventListener('keydown',key,true);},[]);
  const users=()=>{close();requestAnimationFrame(()=>document.querySelector('.player-chip')?.click());};

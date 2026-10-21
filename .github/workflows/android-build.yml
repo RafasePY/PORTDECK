@@ -39,7 +39,7 @@ jobs:
       - name: Upload Android APK
         uses: actions/upload-artifact@v4
         with:
-          name: PortDeck-Android-Safe-v1.1-APK
+          name: PortDeck-Android-Safe-v1.2-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 30
       - name: Add optional notification reader and in-game Start+Select (Completo)
@@ -55,6 +55,6 @@ jobs:
       - name: Upload Android APK Completo
         uses: actions/upload-artifact@v4
         with:
-          name: PortDeck-Android-Safe-v1.1-Completo-APK
+          name: PortDeck-Android-Safe-v1.2-Completo-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 30

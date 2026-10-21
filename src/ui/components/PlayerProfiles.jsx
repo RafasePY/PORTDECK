@@ -17,6 +17,13 @@ export function profileCommand(cmd){
  }else if(cmd==='accept'&&root.contains(document.activeElement))document.activeElement.click();
  return true;
 }
+// Usuário ativo para contar horas por perfil; atualiza quando alguém troca de usuário.
+export const activeProfileId=()=>{try{return readProfiles(localStorage).activeId;}catch{return defaults().activeId;}};
+export function useActiveProfileId(){
+ const [id,setId]=useState(activeProfileId);
+ useEffect(()=>{const sync=()=>setId(activeProfileId());window.addEventListener('portdeck-profile',sync);return()=>window.removeEventListener('portdeck-profile',sync);},[]);
+ return id;
+}
 // Troca de usuário como no PS4: só abre quando o jogador escolhe (avatar, tecla P ou ↑ + A no controle), nunca sozinha.
 export default function PlayerProfiles(){
  const [data,setData]=useState(()=>{try{return readProfiles(localStorage);}catch{return defaults();}});
@@ -25,7 +32,7 @@ export default function PlayerProfiles(){
  const active=data.profiles.find(p=>p.id===data.activeId)||data.profiles[0];
  const focused=data.profiles.find(p=>p.id===focusId)||active;
  useEffect(()=>{document.documentElement.style.setProperty('--dashboard-accent',THEMES[active.theme].color);},[active.theme]);
- const commit=value=>{try{const saved=writeProfiles(localStorage,value);setData(saved);setError('');return true;}catch{setError('Não foi possível salvar. Verifique o espaço disponível e tente novamente.');return false;}};
+ const commit=value=>{try{const saved=writeProfiles(localStorage,value);setData(saved);setError('');window.dispatchEvent(new Event('portdeck-profile'));return true;}catch{setError('Não foi possível salvar. Verifique o espaço disponível e tente novamente.');return false;}};
  const close=()=>{setOpen(false);setDraft(null);setError('');setFocusId(null);requestAnimationFrame(()=>document.querySelector('.console-tile.active,[data-console-add]')?.focus({preventScroll:true}));};
  const show=()=>{try{setData(readProfiles(localStorage));setError('');}catch{setError('Os perfis salvos não puderam ser lidos. Nenhum dado foi substituído.');}setOpen(true);};
  useEffect(()=>{

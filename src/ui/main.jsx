@@ -1,8 +1,9 @@
 import ControlCenter,{LibraryTabs,categoryOf,centerCommand,useDialogFocus,dialogCommand,markPad} from './components/ControlCenter.jsx';
-import PlayerProfiles,{profileCommand} from './components/PlayerProfiles.jsx';
+import PlayerProfiles,{profileCommand,useActiveProfileId,activeProfileId} from './components/PlayerProfiles.jsx';
 import React,{useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import{createRoot}from'react-dom/client';
 import{AnimatePresence,motion,useReducedMotion}from'motion/react';
+import {playSound} from './sound.mjs';
 import './style.css';
 import './dashboard.css';
 import './intro.css';
@@ -18,25 +19,8 @@ const $time=s=>{const n=Math.max(0,Number(s)||0),h=Math.floor(n/3600),m=Math.flo
 const seconds=g=>g?.playedSeconds||0;
 const sortGames=xs=>[...xs].sort((a,b)=>(Date.parse(b.lastPlayed||'')||0)-(Date.parse(a.lastPlayed||'')||0));
 const defaultSound=()=>localStorage.getItem('portdeck-sound')!=='off';
-let audioContext;
-function sound(kind,enabled){
-  if(!enabled)return;
-  try{
-    const C=window.AudioContext||window.webkitAudioContext;
-    if(!C)return;
-    audioContext||=new C();
-    if(audioContext.state==='suspended')audioContext.resume();
-    const notes=kind==='start'?[[130,430,.085,0],[260,600,.055,.13],[525,840,.035,.24]]:kind==='move'?[[420,620,.026,0]]:kind==='back'?[[650,330,.03,0]]:[[425,860,.048,0],[790,1110,.021,.06]];
-    for(const [low,high,vol,delay]of notes){
-      const now=audioContext.currentTime+delay,osc=audioContext.createOscillator(),amp=audioContext.createGain();
-      osc.type=kind==='start'?'triangle':'sine';osc.frequency.setValueAtTime(low,now);
-      osc.frequency.exponentialRampToValueAtTime(high,now+.15);
-      amp.gain.setValueAtTime(.0001,now);amp.gain.exponentialRampToValueAtTime(vol,now+.018);
-      amp.gain.exponentialRampToValueAtTime(.0001,now+.23);
-      osc.connect(amp).connect(audioContext.destination);osc.start(now);osc.stop(now+.25);
-    }
-  }catch{}
-}
+// Sons compartilhados com o Android (src/ui/sound.mjs).
+const sound=(kind,enabled)=>playSound(kind,enabled);
 const Icon=({name,size=20})=>{
   const common={width:size,height:size,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:1.8,strokeLinecap:'round',strokeLinejoin:'round','aria-hidden':true};
   const shapes={
@@ -108,8 +92,10 @@ function App(){
   const reduced=useReducedMotion(),[menu,setMenu]=useState(null),[closing,setClosing]=useState(null),[focusZone,setFocusZone]=useState('games'),[actionIndex,setActionIndex]=useState(0),[clock,setClock]=useState(new Date()),[games,setGames]=useState([]),[selected,setSelected]=useState(''),[view,setView]=useState('home'),[editing,setEditing]=useState(null),[running,setRunning]=useState([]),[art,setArt]=useState({}),[muted,setMuted]=useState(!defaultSound()),[intro,setIntro]=useState(true),[introReady,setIntroReady]=useState(false),[query,setQuery]=useState(''),[toast,setToast]=useState(''),[pad,setPad]=useState('');
   const gamesRef=useRef(games),stateRef=useRef({}),assetRequests=useRef(new Map()),lastPad=useRef(''),lastPadAt=useRef(0),toastTimeout=useRef(null),selectArea=useRef(null);
   const [tab,setTab]=useState('games');
-  const visible=games.filter(g=>categoryOf(g)===tab);
-  const changeTab=value=>{setTab(value);setView('home');setFocusZone('games');setSelected(gamesRef.current.find(g=>categoryOf(g)===value)?.id||'');};
+  const [shelfQuery,setShelfQuery]=useState(''),profileId=useActiveProfileId();
+ // Pesquisa da fileira: só a aba atual; a Biblioteca pesquisa a coleção inteira.
+ const visible=games.filter(g=>categoryOf(g)===tab&&(!shelfQuery||g.name.toLowerCase().includes(shelfQuery.toLowerCase())));
+  const changeTab=value=>{setTab(value);setShelfQuery('');setView('home');setFocusZone('games');setSelected(gamesRef.current.find(g=>categoryOf(g)===value)?.id||'');};
   const game=visible.find(g=>g.id===selected)||visible[0],focusedId=game?.id;
   const contextGame=games.find(g=>g.id===menu?.id);
   const closingGame=games.find(g=>g.id===closing?.id);
@@ -165,7 +151,7 @@ function App(){
   },[games]);
   const icons=useMemo(()=>Object.fromEntries(games.map(g=>[g.id,exeIcons[g.id+'|'+g.exe]]).filter(([,src])=>src)),[games,exeIcons]);
   const choose=useCallback((id)=>{if(!id)return;setSelected(id);sound('move',enabled);},[enabled]);
-  const jump=useCallback(delta=>{const all=gamesRef.current.filter(g=>categoryOf(g)===stateRef.current.tab);const old=stateRef.current.selected;const n=all.findIndex(g=>g.id===old);if(all.length){const next=all[(Math.max(0,n)+delta+all.length)%all.length];setSelected(next.id);sound('move',stateRef.current.enabled);}},[]);
+  const jump=useCallback(delta=>{const ids=stateRef.current.visibleIds,all=ids?gamesRef.current.filter(g=>ids.includes(g.id)):gamesRef.current.filter(g=>categoryOf(g)===stateRef.current.tab);const old=stateRef.current.selected;const n=all.findIndex(g=>g.id===old);if(all.length){const next=all[(Math.max(0,n)+delta+all.length)%all.length];setSelected(next.id);sound('move',stateRef.current.enabled);}},[]);
   const play=useCallback(async(id)=>{const target=id||stateRef.current.selected;if(!target)return;sound('select',stateRef.current.enabled);try{if(!api)return announce('Prévia: execução disponível no PortDeck instalado.');await api.play(target);const found=gamesRef.current.find(g=>g.id===target);announce('Iniciando '+(found?.name||'jogo')+'...');}catch(e){fail(e);}},[announce,fail]);
   const add=useCallback(async()=>{if(!api)return announce('Execute o PortDeck para adicionar jogos.');try{const g=await api.add();if(g){g.category=stateRef.current.tab;await api.update(g);await reload();setSelected(g.id);setEditing(g);}}catch(e){fail(e);}},[announce,reload,fail]);
   const openEditor=useCallback(id=>{const target=gamesRef.current.find(g=>g.id===id);if(target){setEditing(target);sound('select',stateRef.current.enabled);}},[]);
@@ -211,7 +197,7 @@ function App(){
     else if(s.actionIndex===1)s.openEditor(s.selected);
     else document.querySelector('.console-actions .console-btn:nth-child(3)')?.click();
   },[]);
-  stateRef.current={tab,changeTab,selected:focusedId,enabled,view,editing,play,jump,openEditor,openMenu,notify:announce,muted,intro,introReady,menu,closing,focusZone,actionIndex,activate};
+  stateRef.current={visibleIds:visible.map(g=>g.id),tab,changeTab,selected:focusedId,enabled,view,editing,play,jump,openEditor,openMenu,notify:announce,muted,intro,introReady,menu,closing,focusZone,actionIndex,activate};
   useEffect(()=>{const t=setTimeout(()=>{setIntroReady(true);},reduced?180:1150);return()=>clearTimeout(t);},[reduced]);
   useEffect(()=>{const el=document.querySelector('[data-selected="true"]');if(el)el.scrollIntoView({behavior:reduced?'instant':'smooth',inline:'center',block:'nearest'});},[focusedId,view,reduced]);
   useEffect(()=>{
@@ -314,6 +300,8 @@ function App(){
               else if(cmd==='accept')document.activeElement?.matches?.('.game-context-menu [role="menuitem"]')&&document.activeElement.click();
             }
             else if(st.editing){dialogCommand(cmd,'.editor');}
+            // Y / △ abre a pesquisa da fileira (só a aba atual).
+            else if(cmd==='options'&&st.view==='home'){document.querySelector('.console-search')?.click();}
             else if(cmd==='menu'&&st.view==='home'&&st.selected){
               const tile=document.querySelector('.console-tile.active');
               const rect=tile?.getBoundingClientRect();st.openMenu(st.selected,rect?.left||180,(rect?.bottom||120)+8);
@@ -362,7 +350,7 @@ function App(){
       <main>
         <AnimatePresence mode="wait">
           {view==='home'&&<motion.div key="home" className="home-console-view" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} transition={{duration:reduced?.01:.22}}>
-            <ConsoleHome runningIds={running} category={tab} games={visible} game={game} art={art} icons={icons} selected={focusedId} zone={focusZone} actionIndex={actionIndex} onZone={setFocusZone} onAction={setActionIndex} onSelect={choose} onPlay={()=>play(focusedId)} onConfigure={()=>openEditor(focusedId)} onDetails={()=>setView('detail')} onAdd={add} onContext={openMenu} onMenu={openMenu}/>
+            <ConsoleHome onLibrary={()=>{setQuery('');setView('library');}} query={shelfQuery} onQuery={q=>{setShelfQuery(q);const first=games.find(g=>categoryOf(g)===tab&&(!q||g.name.toLowerCase().includes(q.toLowerCase())));if(first)setSelected(first.id);}} profileId={profileId} runningIds={running} category={tab} games={visible} game={game} art={art} icons={icons} selected={focusedId} zone={focusZone} actionIndex={actionIndex} onZone={setFocusZone} onAction={setActionIndex} onSelect={choose} onPlay={()=>play(focusedId)} onConfigure={()=>openEditor(focusedId)} onDetails={()=>setView('detail')} onAdd={add} onContext={openMenu} onMenu={openMenu}/>
           </motion.div>}
           {view==='detail'&&<motion.div key="detail" className="detail" initial={{opacity:0,x:70}} animate={{opacity:1,x:0}} exit={{opacity:0,x:-40}} transition={spring}>
             <button className="breadcrumb" onClick={()=>reveal('home')}><Icon name="back"/> Voltar à biblioteca</button>
@@ -375,7 +363,7 @@ function App(){
           </motion.div>}
           {view==='library'&&<motion.div key="library" className="library" initial={{opacity:0,x:65}} animate={{opacity:1,x:0}} exit={{opacity:0,x:-35}} transition={{duration:.36}}>
             <div className="library-title"><div><div className="eyebrow">TODOS OS SEUS PORTS</div><h1>Biblioteca <span>{games.length}</span></h1></div><button className="action-primary" onClick={add}><Icon name="add" size={18}/> ADICIONAR</button></div>
-            <label className="search"><Icon name="search"/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Pesquisar jogos..." autoComplete="off"/></label>
+            <label className="search"><Icon name="search"/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Pesquisar na biblioteca (jogos e mídia)..." autoComplete="off"/></label>
             <div className="grid">{filtered.map(g=><Cover key={g.id} game={g} art={art} icon={icons[g.id]} compact active={g.id===focusedId} onClick={()=>{choose(g.id);setView('detail');}}/>)}</div>
             {!filtered.length&&<div className="no-results">{games.length?'Nenhum jogo encontrado.':'Sua biblioteca ainda está vazia.'}</div>}
           </motion.div>}

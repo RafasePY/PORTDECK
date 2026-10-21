@@ -30,9 +30,11 @@ public class PortDeckGamepadService extends AccessibilityService {
   private boolean start, select;
   private long last;
   // Estado do "Fechar jogo" automático.
-  private String closing;
-  private int step;
-  private long deadline;
+  private String closing, closingLabel;
+  private int step, token, firstWindow = -1;
+  private long deadline, stepAt;
+  // Resultado do último "Fechar jogo", mostrado no diagnóstico do sininho.
+  static volatile String lastClose = "";
 
   @Override protected void onServiceConnected() { instance = this; }
   @Override public boolean onUnbind(Intent intent) { if(instance == this) instance = null; return super.onUnbind(intent); }
@@ -47,13 +49,18 @@ public class PortDeckGamepadService extends AccessibilityService {
     AccessibilityNodeInfo root = getRootInActiveWindow();
     if(root == null) return;
     if(step == 0) {
+      // Só age na tela do jogo certo (o nome do app aparece em Informações do app).
+      if(closingLabel != null && !hasText(root, closingLabel)) return;
       AccessibilityNodeInfo button = find(root, STOP, false);
       if(button == null) return;
+      firstWindow = root.getWindowId();
       // Botão desativado (nele ou no item clicável que o contém) = o jogo já estava parado.
-      if(click(button)) { step = 1; deadline = SystemClock.uptimeMillis() + 5000; } else finishClose(true);
+      if(click(button)) { step = 1; stepAt = SystemClock.uptimeMillis(); deadline = stepAt + 5000; } else finishClose(true, "já estava parado");
     } else {
+      // A confirmação abre em outra janela (diálogo). Antes disso, o mesmo texto ainda é o botão da página: não confirmar cedo.
+      if(root.getWindowId() == firstWindow && SystemClock.uptimeMillis() - stepAt < 2500) return;
       AccessibilityNodeInfo confirm = find(root, CONFIRM, true);
-      if(confirm != null && click(confirm)) finishClose(true);
+      if(confirm != null && click(confirm)) finishClose(true, "fechado");
     }
   }
 
@@ -66,17 +73,31 @@ public class PortDeckGamepadService extends AccessibilityService {
   }
 
   private void beginClose(String pkg) {
-    closing = pkg; step = 0; deadline = SystemClock.uptimeMillis() + 6000;
+    final int mine = ++token;
+    closing = pkg; step = 0; firstWindow = -1; deadline = SystemClock.uptimeMillis() + 7000;
+    try { closingLabel = getPackageManager().getApplicationLabel(getPackageManager().getApplicationInfo(pkg, 0)).toString(); }
+    catch(Exception error) { closingLabel = null; }
     Intent info = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + pkg));
-    info.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_HISTORY | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+    // CLEAR_TASK: sempre uma tela nova das Configurações. Sem isso, uma tentativa anterior deixava a tela de outro app aberta
+    // e o Android a reaproveitava (era por isso que parava de fechar depois de algumas vezes).
+    info.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NO_HISTORY | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
     startActivity(info);
-    main.postDelayed(() -> { if(pkg.equals(closing)) finishClose(false); }, 6500);
+    // O tempo esgotado só vale para esta tentativa, nunca para uma mais nova.
+    main.postDelayed(() -> { if(mine == token && closing != null) finishClose(false, "tempo esgotado no passo " + (step + 1)); }, 7500);
   }
 
-  private void finishClose(boolean ok) {
+  private static boolean hasText(AccessibilityNodeInfo root, String text) {
+    List<AccessibilityNodeInfo> nodes = root.findAccessibilityNodeInfosByText(text);
+    return nodes != null && !nodes.isEmpty();
+  }
+
+  private void finishClose(boolean ok) { finishClose(ok, ok ? "fechado" : "falhou"); }
+
+  private void finishClose(boolean ok, String detail) {
     if(closing == null) return;
     String pkg = closing;
     closing = null;
+    lastClose = (closingLabel != null ? closingLabel : pkg) + ": " + detail;
     if(ok) { performGlobalAction(GLOBAL_ACTION_BACK); main.postDelayed(() -> openPortDeck(false), 350); }
     PortDeckNotificationsPlugin.closeResult(pkg, ok);
   }

@@ -204,4 +204,28 @@ public class PortDeckNativePlugin extends Plugin {
       call.resolve(out);
     }catch(Exception e){call.reject("O Android não permitiu fechar este app: "+e.getMessage());}
   }
+  // Backup da biblioteca: grava o JSON em Downloads/PortDeck (fica no tablet mesmo se o PortDeck for desinstalado).
+  @PluginMethod
+  public void saveBackup(PluginCall call){
+    String name=call.getString("name","PortDeck-backup.json"),data=call.getString("data","");
+    if(!name.matches("[A-Za-z0-9._-]{1,80}\\.json")||data.isEmpty()){call.reject("Backup inválido.");return;}
+    try{
+      byte[] bytes=data.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+      if(android.os.Build.VERSION.SDK_INT>=29){
+        android.content.ContentValues values=new android.content.ContentValues();
+        values.put(android.provider.MediaStore.Downloads.DISPLAY_NAME,name);
+        values.put(android.provider.MediaStore.Downloads.MIME_TYPE,"application/json");
+        values.put(android.provider.MediaStore.Downloads.RELATIVE_PATH,android.os.Environment.DIRECTORY_DOWNLOADS+"/PortDeck");
+        android.net.Uri uri=getContext().getContentResolver().insert(android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI,values);
+        if(uri==null)throw new Exception("sem acesso a Downloads");
+        try(java.io.OutputStream out=getContext().getContentResolver().openOutputStream(uri)){out.write(bytes);}
+        JSObject res=new JSObject();res.put("path","Download/PortDeck/"+name);call.resolve(res);
+      }else{
+        java.io.File dir=new java.io.File(getContext().getExternalFilesDir(null),"backup");dir.mkdirs();
+        java.io.File file=new java.io.File(dir,name);
+        try(java.io.FileOutputStream out=new java.io.FileOutputStream(file)){out.write(bytes);}
+        JSObject res=new JSObject();res.put("path",file.getAbsolutePath());call.resolve(res);
+      }
+    }catch(Exception e){call.reject("Não foi possível salvar o backup: "+e.getMessage());}
+  }
 }

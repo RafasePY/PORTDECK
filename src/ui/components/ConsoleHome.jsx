@@ -1,4 +1,4 @@
-import React,{useEffect,useRef} from 'react';
+import React,{useEffect,useRef,useState} from 'react';
 import {AnimatePresence,motion,useReducedMotion} from 'motion/react';
 
 const duration=s=>{const t=Math.max(0,Number(s)||0);const h=Math.floor(t/3600),m=Math.floor((t%3600)/60);return h? h+'h '+String(m).padStart(2,'0')+'min':m+'min';};
@@ -21,8 +21,12 @@ function GameTile({game,selected,src,icon,running=false,onSelect,onContext}){
     <span className="console-tile-caption">{game.name}</span>
   </motion.button>;
 }
-export default function ConsoleHome({category="games",games,game,art,icons={},selected,onSelect,onPlay,onConfigure,onDetails,onAdd,onContext,onMenu,isAddSelected=false,onAddFocus,estimatedTime=false,zone='games',actionIndex=0,onZone,onAction,runningIds=[]}){
-  const shelf=useRef(null),reduced=useReducedMotion();
+const SearchIcon=()=><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>;
+export default function ConsoleHome({category="games",games,game,art,icons={},selected,onSelect,onPlay,onConfigure,onDetails,onAdd,onContext,onMenu,isAddSelected=false,onAddFocus,estimatedTime=false,zone='games',actionIndex=0,onZone,onAction,runningIds=[],query='',onQuery,profileId,onLibrary}){
+  const shelf=useRef(null),reduced=useReducedMotion(),searchInput=useRef(null),[searchOpen,setSearchOpen]=useState(false);
+  const searching=searchOpen||!!query;
+  useEffect(()=>{if(searchOpen)searchInput.current?.focus();},[searchOpen]);
+  const closeSearch=()=>{onQuery?.('');setSearchOpen(false);};
   useEffect(()=>{
     const item=shelf.current?.querySelector(isAddSelected?'[data-console-add="true"]':'[data-console-tile].active');
     item?.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'nearest',inline:'center'});
@@ -36,16 +40,22 @@ export default function ConsoleHome({category="games",games,game,art,icons={},se
       <div className="console-shelf-scroll" ref={shelf}>
         {games.map(g=><GameTile key={g.id} game={g} selected={g.id===selected} src={g.cover&&art[g.cover]} icon={icons[g.id]} running={runningIds.includes(g.id)} onSelect={id=>{onZone('games');onSelect(id);}} onContext={onContext}/>)}
         <button data-console-add="true" className={'console-add'+(isAddSelected?' console-add-selected':'')} aria-pressed={isAddSelected} onFocus={()=>onAddFocus?.()} onClick={onAdd} title="Adicionar port" aria-label="Adicionar port"><span>+</span><small>Adicionar</small></button>
+        {/* Pesquisa só da aba atual (Jogos ou Mídia); a Biblioteca tem a pesquisa da coleção inteira. */}
+        {onQuery&&(searching?<div className="console-search console-search-open"><SearchIcon/><input ref={searchInput} value={query} aria-label={category==='media'?'Pesquisar mídia':'Pesquisar jogos'} placeholder={category==='media'?'Pesquisar mídia':'Pesquisar jogos'} onChange={e=>onQuery(e.target.value)}
+          onKeyDown={e=>{e.stopPropagation();if(e.key==='Escape'){e.preventDefault();closeSearch();}else if(e.key==='Enter'){e.preventDefault();shelf.current?.querySelector('[data-console-tile].active')?.focus();}}}/><button type="button" aria-label="Limpar pesquisa" onClick={closeSearch}>×</button></div>
+          :<button type="button" className="console-search" aria-label={category==='media'?'Pesquisar mídia':'Pesquisar jogos'} onClick={()=>setSearchOpen(true)}><SearchIcon/><small>Pesquisar</small></button>)}
+        {/* Como no PS5: a Biblioteca completa fica no fim da fileira. */}
+        {onLibrary&&<button type="button" className="console-search console-library" aria-label="Abrir biblioteca" onClick={onLibrary}><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M4 4h4v16H4zM10 4h4v16h-4zM16 5l3.5-1 3 15.5-3.5 1z"/></svg><small>Biblioteca</small></button>}
       </div>
-      <div className="console-shelf-progress">{games.length?String(Math.max(1,games.findIndex(g=>g.id===selected)+1)).padStart(2,'0')+' / '+String(games.length).padStart(2,'0'):'BIBLIOTECA VAZIA'}</div>
+      <div className="console-shelf-progress">{games.length?String(Math.max(1,games.findIndex(g=>g.id===selected)+1)).padStart(2,'0')+' / '+String(games.length).padStart(2,'0'):query?'NENHUM RESULTADO':'BIBLIOTECA VAZIA'}</div>
     </section>
     <div className="console-stage">
       <AnimatePresence mode="wait">
         <motion.div className="console-story" key={game?.id||'empty'} initial={{opacity:0,y:reduced?0:10}} animate={{opacity:1,y:0}} exit={{opacity:0}} transition={{duration:reduced?0:.18}}>
           <div className="console-eyebrow"><span className="console-led"/> {game?'SUA BIBLIOTECA':'PORTDECK PULSE'}</div>
-          {game?(logo?<img className="console-game-logo" src={logo} alt={game.name}/>:<h1>{game.name}</h1>):<h1>{category==='media'?'Seu entretenimento, aqui.':'Seu próximo jogo começa aqui.'}</h1>}
+          {game?(logo?<img className="console-game-logo" src={logo} alt={game.name}/>:<h1>{game.name}</h1>):<h1>{query?'Nada encontrado para “'+query+'”':category==='media'?'Seu entretenimento, aqui.':'Seu próximo jogo começa aqui.'}</h1>}
           {description?<p className="console-description">{description}</p>:!game?<p className="console-description">Adicione um aplicativo para começar.</p>:null}
-          {game&&<div className="console-metadata"><span>◷ {duration(game.playedSeconds)} {estimatedTime?'estimados':'jogadas'}</span><span>▦ Última sessão: {date(game.lastPlayed)}</span></div>}
+          {game&&<div className="console-metadata"><span>◷ {profileId&&game.playedBy?'Você: '+duration(game.playedBy[profileId]||0)+' · Total: '+duration(game.playedSeconds):duration(game.playedSeconds)} {estimatedTime?'estimados':'jogadas'}</span><span>▦ Última sessão: {date(game.lastPlayed)}</span></div>}
           <div className="console-actions">
             <button className={'console-btn console-play'+(zone==='actions'&&actionIndex===0?' console-focused':'')} onFocus={()=>{onZone('actions');onAction(0);}} onClick={()=>act(0,game?onPlay:onAdd)}>
               <span className="console-triangle">▶</span>{game?(category==='media'?'Abrir':'Jogar'):(category==='media'?'Adicionar mídia':'Adicionar jogo')}

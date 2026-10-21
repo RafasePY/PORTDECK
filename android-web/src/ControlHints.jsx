@@ -1,4 +1,6 @@
 import React from 'react';
+// Ícone de toque desenhado pelo dono do projeto (círculo + mão), no lugar do emoji ☝.
+import touchHint from './assets/touch-hint.png';
 export const layoutFromDevice=(device,override)=>override&&override!=='auto'?override:(device?.kind==='keyboard'||!device?.kind?'touch':device.kind);
 const keyMap={
   xbox:{accept:'A',back:'B',options:'≡',home:'⊞'},
@@ -12,6 +14,7 @@ const keyMap={
 };
 export function ButtonGlyph({layout,action}){
  const k=keyMap[layout]||keyMap.generic;
+ if(layout==='touch'&&action==='accept')return <img className="pd-glyph-touch-icon" src={touchHint} alt="Toque" width="25" height="25"/>;
  return <span className={'pd-glyph pd-glyph-'+layout+' pd-glyph-'+action} aria-label={k[action]}>{k[action]}</span>;
 }
 export default function ControlHints({layout}){

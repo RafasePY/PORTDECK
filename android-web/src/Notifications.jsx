@@ -43,7 +43,7 @@ export function useTabletNotifications({paused=false,onError}={}){
 /** Start + Select dentro dos jogos (APK Completo): estado do serviço de acessibilidade e aviso de "voltei ao PortDeck". */
 export function useGamepadAccess({onHome,onCloseResult}={}){
  const [state,setState]=useState({available:false,enabled:false}),home=useRef(onHome),closed=useRef(onCloseResult);home.current=onHome;closed.current=onCloseResult;
- const refresh=useCallback(async()=>{try{const r=await Alerts.gamepadStatus();setState({available:!!r?.available,enabled:!!r?.enabled,connected:!!r?.connected,lastKey:r?.lastKey||'',lastKeyAt:r?.lastKeyAt||0,batteryFree:!!r?.batteryFree});}catch{setState({available:false,enabled:false});}},[]);
+ const refresh=useCallback(async()=>{try{const r=await Alerts.gamepadStatus();setState({available:!!r?.available,enabled:!!r?.enabled,connected:!!r?.connected,lastKey:r?.lastKey||'',lastKeyAt:r?.lastKeyAt||0,lastClose:r?.lastClose||'',batteryFree:!!r?.batteryFree});}catch{setState({available:false,enabled:false});}},[]);
  useEffect(()=>{
   refresh();
   const onVisible=()=>{if(!document.hidden)refresh();};
@@ -62,7 +62,7 @@ export function useGamepadAccess({onHome,onCloseResult}={}){
 }
 
 const ago=t=>{if(!t)return '';const s=Math.max(0,Math.round((Date.now()-t)/1000));return s<60?'há '+s+' s':s<3600?'há '+Math.round(s/60)+' min':'há '+Math.round(s/3600)+' h';};
-export function GamepadAccessSettings({available,enabled,connected,lastKey,lastKeyAt,batteryFree,openSettings,openBattery,refresh}){
+export function GamepadAccessSettings({available,enabled,connected,lastKey,lastKeyAt,lastClose,batteryFree,openSettings,openBattery,refresh}){
  // Atualiza o diagnóstico enquanto a janela está aberta (para testar apertando Start/Select).
  useEffect(()=>{if(!available||!refresh)return;const id=setInterval(refresh,1500);return()=>clearInterval(id);},[available,refresh]);
  if(!available)return null;
@@ -72,7 +72,7 @@ export function GamepadAccessSettings({available,enabled,connected,lastKey,lastK
   <p className={'ad-alert-state'+(enabled?' on':'')}>{enabled?'✓ Ativado':'Ainda não ativado'}</p>
   {!enabled&&<p className="ad-alert-help">Toque em Ativar → <b>Apps instalados</b> → <b>PortDeck · Start + Select</b> → ligar. Se aparecer "configuração restrita": Configurações → Apps → PortDeck Safe → ⋮ → Permitir configurações restritas.</p>}
   <div className="ad-alert-actions"><button type="button" className={enabled?'':'action-primary'} onClick={openSettings}>{enabled?'Gerenciar':'Ativar'}</button>{enabled&&<button type="button" className={batteryFree?'':'action-primary'} onClick={openBattery}>{batteryFree?'✓ Bateria sem restrição':'Não deixar o Android adormecer'}</button>}</div>
-  {enabled&&<p className="ad-gamepad-diag" aria-live="polite">Serviço {connected?'ativo':'parado — desative e ative de novo em Acessibilidade'} · Último botão recebido: {lastKey?<b>{lastKey} {ago(lastKeyAt)}</b>:'nenhum ainda'}</p>}
+  {enabled&&<p className="ad-gamepad-diag" aria-live="polite">Serviço {connected?'ativo':'parado — desative e ative de novo em Acessibilidade'} · Último botão recebido: {lastKey?<b>{lastKey} {ago(lastKeyAt)}</b>:'nenhum ainda'}{lastClose&&<> · Último Fechar jogo: <b>{lastClose}</b></>}</p>}
   {enabled&&!batteryFree&&<p className="ad-alert-help">A Samsung adormece apps em segundo plano e o Start+Select para de responder depois de um tempo de jogo. Toque em <b>Não deixar o Android adormecer</b> e permita. Se ainda parar: Config. → Bateria → Limites de uso em segundo plano → <b>Apps que nunca entram em suspensão</b> → adicionar PortDeck Safe.</p>}
   <small>Também usado pelo "Fechar jogo": o PortDeck abre as Configurações do jogo e aperta Forçar parada por você. Ele só lê a tela de Configurações nesse momento; não lê jogos, mensagens nem o que você digita.</small>
  </div>;

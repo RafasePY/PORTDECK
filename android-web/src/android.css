@@ -130,3 +130,12 @@ button{touch-action:manipulation}
 .ad-alert-settings small{color:#9db4d0}
 .ad-gamepad-settings{margin-top:22px;padding-top:18px;border-top:1px solid #ffffff22}.ad-gamepad-settings h3{margin:0;font-size:16px;font-weight:600;color:#fff}
 .ad-gamepad-diag{margin:0;font-size:13px;color:#cfe0f4}.ad-gamepad-diag b{color:#8fe6b8}
+.pd-glyph-touch-icon{width:27px;height:27px;flex:none;display:inline-block;vertical-align:middle}
+/* 1.2 — backup e restauração na Biblioteca */
+.ad-backup{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;margin:6px 0 18px;padding:14px 16px;border:1px solid #ffffff22;border-radius:10px;background:#ffffff08}
+.ad-backup>div:first-child{display:grid;gap:4px;max-width:560px}.ad-backup strong{font-size:15px}.ad-backup small{font-size:12px;color:#b6cbe3}
+.ad-backup-actions,.ad-backup-confirm{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.ad-backup button{min-height:44px;padding:8px 16px;border-radius:8px;background:#ffffff12;border:1px solid #cfe3ff40;color:#eef6ff}
+.ad-backup .action-primary{background:#9be7ff;color:#04203a;border-color:transparent}
+.ad-backup-confirm p{margin:0;font-size:13px;flex-basis:100%}
+.ad-library>input{width:min(560px,100%);height:52px;padding:0 18px;margin:0 0 18px;border-radius:26px;border:1px solid #cfe3ff40;background:#0c1d3be6;color:#fff;font:inherit;font-size:16px;outline:0}.ad-library>input:focus{border-color:#fff}

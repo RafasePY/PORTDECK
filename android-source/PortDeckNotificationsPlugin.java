@@ -61,6 +61,7 @@ public class PortDeckNotificationsPlugin extends Plugin {
     result.put("connected", PortDeckGamepadService.instance != null);
     result.put("lastKey", PortDeckGamepadService.lastKey);
     result.put("lastKeyAt", PortDeckGamepadService.lastKeyAt);
+    result.put("lastClose", PortDeckGamepadService.lastClose);
     android.os.PowerManager power = (android.os.PowerManager) getContext().getSystemService(android.content.Context.POWER_SERVICE);
     result.put("batteryFree", power != null && power.isIgnoringBatteryOptimizations(getContext().getPackageName()));
     call.resolve(result);

@@ -4,7 +4,15 @@ Launcher de jogos em tela cheia com cara de console (inspirado no PS4/PS5 e no S
 
 > O PortDeck não emula, converte nem distribui jogos ou firmware. Ele só abre o que você já tem instalado.
 
-## Versão atual: 1.1 — Fechar jogo de verdade e Start+Select confiável
+## Versão atual: 1.2 — Pesquisa, horas por usuário, backup e sons
+
+- **Pesquisar** na fileira (só a aba atual; Y/△ no controle) e cartão **Biblioteca** no fim da fileira, com pesquisa de tudo.
+- **Horas por usuário** no Android: "Você: 1h 30min · Total: 2h".
+- **Backup e restauração** (Android, na Biblioteca): salva biblioteca, capas, perfis e fotos em Download/PortDeck.
+- **Sons de navegação** estilo console (desligáveis).
+- Fechar jogo mais confiável e ícone de toque novo.
+
+### Da 1.1
 
 - **Fechar jogo:** no APK Completo o PortDeck aperta "Forçar parada" sozinho e volta; no APK normal abre a tela do jogo para você tocar em "Forçar parada".
 - **Start+Select mais confiável** dentro dos jogos, com diagnóstico no sininho e botão "Não deixar o Android adormecer" (Samsung).
@@ -26,14 +34,14 @@ Launcher de jogos em tela cheia com cara de console (inspirado no PS4/PS5 e no S
 - **Ícone próprio PD** no APK e no executável do Windows; no Windows, jogo sem capa mostra o ícone do próprio `.exe`.
 - **Notificações do tablet (opcional):** WhatsApp, Gmail etc. aparecem como aviso no canto da tela; tocar abre o app.
 
-Detalhes de cada versão, com fotos, em [`docs/`](docs) (ex.: [`docs/PORTDECK_1.1.md`](docs/PORTDECK_1.1.md)).
+Detalhes de cada versão, com fotos, em [`docs/`](docs) (ex.: [`docs/PORTDECK_1.2.md`](docs/PORTDECK_1.2.md)).
 
 ## Baixar e instalar
 
 Os instaladores são gerados automaticamente pelo GitHub Actions. Abra a aba **Actions**, escolha a execução mais recente da branch desejada e baixe em **Artifacts** (precisa estar logado no GitHub; os arquivos expiram em 30 dias).
 
 ### Windows
-Workflow **Windows installer** → artefato `PortDeck-Windows-v1.1.0`: instalador e versão portátil (`.exe`, x64). Ainda não são assinados digitalmente, então o Windows pode avisar na primeira execução.
+Workflow **Windows installer** → artefato `PortDeck-Windows-v1.2.0`: instalador e versão portátil (`.exe`, x64). Ainda não são assinados digitalmente, então o Windows pode avisar na primeira execução.
 
 ### Android (tablet)
 Workflow **Android APK** gera dois APKs. Extraia o `.zip` e instale o `app-debug.apk` **por cima** da versão anterior (não desinstale: os jogos e perfis ficam no app).
@@ -42,8 +50,8 @@ Workflow **Android APK** gera dois APKs. Extraia o `.zip` e instale o `app-debug
 
 | Artefato | Para quem | Instalação |
 |---|---|---|
-| `PortDeck-Android-Safe-v1.1-APK` | Todo mundo | Normal, pelo gerenciador de arquivos |
-| `PortDeck-Android-Safe-v1.1-Completo-APK` | Quem quer pop-ups de notificação e **Start+Select dentro dos jogos** | O **Play Protect bloqueia** (proteção contra fraude barra apps de fora da loja com leitor de notificações ou acessibilidade). Instale por `adb install -r app-debug.apk` ou desligue a verificação do Play Protect só durante a instalação e religue depois. Depois, no PortDeck: sininho → **Liberar acesso** (notificações) e **Ativar** em "Start + Select dentro dos jogos" (Acessibilidade → Apps instalados → PortDeck · Start + Select). Se o Android disser "configuração restrita": Configurações → Apps → PortDeck Safe → ⋮ → **Permitir configurações restritas**. |
+| `PortDeck-Android-Safe-v1.2-APK` | Todo mundo | Normal, pelo gerenciador de arquivos |
+| `PortDeck-Android-Safe-v1.2-Completo-APK` | Quem quer pop-ups de notificação e **Start+Select dentro dos jogos** | O **Play Protect bloqueia** (proteção contra fraude barra apps de fora da loja com leitor de notificações ou acessibilidade). Instale por `adb install -r app-debug.apk` ou desligue a verificação do Play Protect só durante a instalação e religue depois. Depois, no PortDeck: sininho → **Liberar acesso** (notificações) e **Ativar** em "Start + Select dentro dos jogos" (Acessibilidade → Apps instalados → PortDeck · Start + Select). Se o Android disser "configuração restrita": Configurações → Apps → PortDeck Safe → ⋮ → **Permitir configurações restritas**. |
 
 Os dois usam o mesmo app (`com.portdeck.pulse.safe`) e os mesmos dados.
 
@@ -57,6 +65,7 @@ Os dois usam o mesmo app (`com.portdeck.pulse.safe`) e os mesmos dados.
 | Opções do jogo | Start / Options | Tecla Menu, Shift+F10 ou botão direito | Segurar a capa |
 | Configurar jogo (Windows) | — | F2 | — |
 | Voltar ao início | Start + Select (Home quando disponível) | Ctrl+Shift+H | — |
+| Pesquisar (fileira) | Y / △ | clique em Pesquisar | Tocar em Pesquisar |
 | Alternar usuário | ↑ a partir da fileira, A (Start edita) | P | Tocar no avatar |
 
 No Windows, Start + Select também traz o PortDeck de volta com um jogo aberto (ponte XInput em segundo plano). No Android isso só funciona com o PortDeck em primeiro plano.
