@@ -41,7 +41,7 @@ Detalhes de cada versão, com fotos, em [`docs/`](docs) (ex.: [`docs/PORTDECK_1.
 Os instaladores são gerados automaticamente pelo GitHub Actions. Abra a aba **Actions**, escolha a execução mais recente da branch desejada e baixe em **Artifacts** (precisa estar logado no GitHub; os arquivos expiram em 30 dias).
 
 ### Windows
-Workflow **Windows installer** → artefato `PortDeck-Windows-v1.2.0`: instalador e versão portátil (`.exe`, x64). Ainda não são assinados digitalmente, então o Windows pode avisar na primeira execução.
+Workflow **Windows installer** → artefato `PortDeck-Windows-v1.2.1`: instalador e versão portátil (`.exe`, x64). Ainda não são assinados digitalmente, então o Windows pode avisar na primeira execução.
 
 ### Android (tablet)
 Workflow **Android APK** gera dois APKs. Extraia o `.zip` e instale o `app-debug.apk` **por cima** da versão anterior (não desinstale: os jogos e perfis ficam no app).
@@ -50,8 +50,8 @@ Workflow **Android APK** gera dois APKs. Extraia o `.zip` e instale o `app-debug
 
 | Artefato | Para quem | Instalação |
 |---|---|---|
-| `PortDeck-Android-Safe-v1.2-APK` | Todo mundo | Normal, pelo gerenciador de arquivos |
-| `PortDeck-Android-Safe-v1.2-Completo-APK` | Quem quer pop-ups de notificação e **Start+Select dentro dos jogos** | O **Play Protect bloqueia** (proteção contra fraude barra apps de fora da loja com leitor de notificações ou acessibilidade). Instale por `adb install -r app-debug.apk` ou desligue a verificação do Play Protect só durante a instalação e religue depois. Depois, no PortDeck: sininho → **Liberar acesso** (notificações) e **Ativar** em "Start + Select dentro dos jogos" (Acessibilidade → Apps instalados → PortDeck · Start + Select). Se o Android disser "configuração restrita": Configurações → Apps → PortDeck Safe → ⋮ → **Permitir configurações restritas**. |
+| `PortDeck-Android-Safe-v1.2.1-APK` | Todo mundo | Normal, pelo gerenciador de arquivos |
+| `PortDeck-Android-Safe-v1.2.1-Completo-APK` | Quem quer pop-ups de notificação e **Start+Select dentro dos jogos** | O **Play Protect bloqueia** (proteção contra fraude barra apps de fora da loja com leitor de notificações ou acessibilidade). Instale por `adb install -r app-debug.apk` ou desligue a verificação do Play Protect só durante a instalação e religue depois. Depois, no PortDeck: sininho → **Liberar acesso** (notificações) e **Ativar** em "Start + Select dentro dos jogos" (Acessibilidade → Apps instalados → PortDeck · Start + Select). Se o Android disser "configuração restrita": Configurações → Apps → PortDeck Safe → ⋮ → **Permitir configurações restritas**. |
 
 Os dois usam o mesmo app (`com.portdeck.pulse.safe`) e os mesmos dados.
 

@@ -63,7 +63,10 @@ Os testes de navegador usam `dist/` já compilado para o Windows: rode `npm run 
 - Workflows: `windows-build.yml` (instalador e portátil), `android-build.yml` (APK padrão + APK Completo, ambos conferidos por `verify-apk.cjs`, que lê a versão do `package.json`), `ui-check.yml` (unitários + build + Playwright).
 - O Java nativo só é compilado no CI (não há Android SDK local): depois de mexer em `android-source/`, confira o workflow Android antes de dizer que está pronto.
 
-## Estado em 1.2 (out/2026)
+## Estado em 1.2.1 (out/2026)
+1.2.1: primeiro teste no PC Windows (Xbox 360). Controle agora alcança Adicionar/Pesquisar/Biblioteca (`shelfStep`) e todos os botões do topo (`headerStep`) nas duas plataformas. Registro: `docs/PORTDECK_1.2.1.md`. 36 testes de navegador.
+
+### Base 1.2
 Pronto: tudo da 1.1 (Start+Select validado como estável no tablet após liberar bateria; horas contando) + ícone de toque do dono (`android-web/src/assets/touch-hint.png`); Fechar jogo robusto (CLEAR_TASK, confere o nome do app, confirma só no diálogo, token por tentativa, diagnóstico `lastClose`); pesquisa da fileira só da aba atual (Y/△) e cartão Biblioteca no fim da fileira com pesquisa geral; horas por usuário no Android (`playedBy[profileId]`, Windows só total); backup/restauração Android (`Backup.jsx`, `saveBackup` em Download/PortDeck); sons compartilhados `src/ui/sound.mjs`. versionCode 1002000. Registro: `docs/PORTDECK_1.2.md`.
 Validação: 18 unitários e 34 de navegador.
 Pendente no aparelho: Fechar jogo repetido; backup/restauração real; Windows inteiro desde a 0.7 ainda não testado em PC.

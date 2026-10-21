@@ -7,7 +7,7 @@ import {playSound} from './sound.mjs';
 import './style.css';
 import './dashboard.css';
 import './intro.css';
-import ConsoleHome from './components/ConsoleHome.jsx';
+import ConsoleHome,{shelfStep,isShelfExtra,headerStep} from './components/ConsoleHome.jsx';
 import GameContextMenu from './components/GameContextMenu.jsx';
 import CloseGameOverlay from './components/CloseGameOverlay.jsx';
 import BrandMark from './components/BrandMark.jsx';
@@ -151,7 +151,7 @@ function App(){
   },[games]);
   const icons=useMemo(()=>Object.fromEntries(games.map(g=>[g.id,exeIcons[g.id+'|'+g.exe]]).filter(([,src])=>src)),[games,exeIcons]);
   const choose=useCallback((id)=>{if(!id)return;setSelected(id);sound('move',enabled);},[enabled]);
-  const jump=useCallback(delta=>{const ids=stateRef.current.visibleIds,all=ids?gamesRef.current.filter(g=>ids.includes(g.id)):gamesRef.current.filter(g=>categoryOf(g)===stateRef.current.tab);const old=stateRef.current.selected;const n=all.findIndex(g=>g.id===old);if(all.length){const next=all[(Math.max(0,n)+delta+all.length)%all.length];setSelected(next.id);sound('move',stateRef.current.enabled);}},[]);
+  const jump=useCallback(delta=>{const next=shelfStep(delta);if(!next)return;sound('move',stateRef.current.enabled);if(next.dataset.consoleTile)setSelected(next.dataset.consoleTile);next.focus({preventScroll:true});next.scrollIntoView?.({block:'nearest',inline:'nearest'});},[]);
   const play=useCallback(async(id)=>{const target=id||stateRef.current.selected;if(!target)return;sound('select',stateRef.current.enabled);try{if(!api)return announce('Prévia: execução disponível no PortDeck instalado.');await api.play(target);const found=gamesRef.current.find(g=>g.id===target);announce('Iniciando '+(found?.name||'jogo')+'...');}catch(e){fail(e);}},[announce,fail]);
   const add=useCallback(async()=>{if(!api)return announce('Execute o PortDeck para adicionar jogos.');try{const g=await api.add();if(g){g.category=stateRef.current.tab;await api.update(g);await reload();setSelected(g.id);setEditing(g);}}catch(e){fail(e);}},[announce,reload,fail]);
   const openEditor=useCallback(id=>{const target=gamesRef.current.find(g=>g.id===id);if(target){setEditing(target);sound('select',stateRef.current.enabled);}},[]);
@@ -191,6 +191,9 @@ function App(){
     const s=stateRef.current;
     if(s.view==='library'){setView('detail');return;}
     if(s.view==='detail'){s.play();return;}
+    // Adicionar, Pesquisar e Biblioteca na fileira: A/Enter aciona o cartão focado.
+    const focused=document.activeElement;
+    if(s.focusZone==='games'&&(focused?.matches?.('[data-console-add]')||isShelfExtra(focused))){focused.click();return;}
     if(s.focusZone==='games'&&!s.selected){document.querySelector('[data-console-add]')?.click();return;}
     if(s.focusZone==='games'){setFocusZone('actions');setActionIndex(0);sound('select',s.enabled);return;}
     if(s.actionIndex===0)s.play();
@@ -206,6 +209,7 @@ function App(){
       if(st.intro){if(['Enter',' ','Home'].includes(e.key)){e.preventDefault();if(st.introReady){setIntro(false);sound('select',st.enabled);}}return;}
       if(document.querySelector('[data-player-dialog]'))return;
       if(!e.target?.closest?.('input,textarea,select')&&e.key.toLowerCase()==='p'){e.preventDefault();document.querySelector('.player-chip')?.click();return;}
+      if(e.target?.closest?.('.header')&&['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();headerStep(e.key==='ArrowLeft'?-1:1);return;}
       if(e.target?.closest?.('.header')&&!['ArrowDown','ArrowUp'].includes(e.key))return;
       if(e.ctrlKey&&e.shiftKey&&e.key.toLowerCase()==='h'&&!st.closing){
         e.preventDefault();setEditing(null);setMenu(null);setView('home');setFocusZone('games');st.notify('PortDeck · Início');return;
@@ -281,7 +285,7 @@ function App(){
             stamp=now;
             if(centerCommand(cmd)){}
             else if(['areaLeft','areaRight'].includes(cmd)&&!st.editing&&!st.menu&&!st.closing){st.changeTab(st.tab==='games'?'media':'games');}
-            else if(st.focusZone==='header'&&!['home','home-combo'].includes(cmd)){if(cmd==='accept')document.querySelector('.player-chip')?.click();else if(cmd==='down'||cmd==='back')setFocusZone('games');}
+            else if(st.focusZone==='header'&&!['home','home-combo'].includes(cmd)){if(cmd==='accept')(document.activeElement?.closest?.('.header')?document.activeElement:document.querySelector('.player-chip'))?.click();else if(cmd==='left'||cmd==='right'){headerStep(cmd==='left'?-1:1);sound('move',st.enabled);}else if(cmd==='down'||cmd==='back')setFocusZone('games');}
             else if((cmd==='home-combo'||cmd==='home')&&st.closing?.phase!=='closing'){
               /* Home não descarta formulários nem confirma encerramentos. */
             }

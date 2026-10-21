@@ -21,6 +21,24 @@ function GameTile({game,selected,src,icon,running=false,onSelect,onContext}){
     <span className="console-tile-caption">{game.name}</span>
   </motion.button>;
 }
+// Navegação da fileira por controle/teclado: capas, Adicionar, Pesquisar e Biblioteca, na ordem da tela.
+const SHELF='.console-shelf-scroll > [data-console-tile], .console-shelf-scroll > [data-console-add], .console-shelf-scroll > .console-search, .console-shelf-scroll > .console-library';
+export function shelfStep(delta){
+ const list=[...document.querySelectorAll(SHELF)].map(e=>e.matches('.console-search-open')?e.querySelector('input'):e).filter(Boolean);
+ if(!list.length)return null;
+ let i=list.indexOf(document.activeElement);
+ if(i<0)i=list.findIndex(e=>e.matches('[data-console-tile].active,.console-add-selected'));
+ return list[((i<0?0:i)+delta+list.length)%list.length];
+}
+export const isShelfExtra=el=>!!el?.matches?.('.console-search,.console-library');
+// Cabeçalho por controle: ← → passam por abas, perfil, som, tela cheia e desligar.
+export function headerStep(delta){
+ const list=[...document.querySelectorAll('.header button:not(:disabled)')].filter(e=>e.offsetParent!==null);
+ if(!list.length)return null;
+ const i=list.indexOf(document.activeElement);
+ const next=list[((i<0?list.findIndex(e=>e.matches('.player-chip')):i)+delta+list.length)%list.length];
+ next?.focus({preventScroll:true});return next;
+}
 const SearchIcon=()=><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>;
 export default function ConsoleHome({category="games",games,game,art,icons={},selected,onSelect,onPlay,onConfigure,onDetails,onAdd,onContext,onMenu,isAddSelected=false,onAddFocus,estimatedTime=false,zone='games',actionIndex=0,onZone,onAction,runningIds=[],query='',onQuery,profileId,onLibrary}){
   const shelf=useRef(null),reduced=useReducedMotion(),searchInput=useRef(null),[searchOpen,setSearchOpen]=useState(false);
