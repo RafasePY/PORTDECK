@@ -42,6 +42,7 @@ Os testes de navegador usam `dist/` já compilado para o Windows: rode `npm run 
 - **Android "Safe":** sem categoria HOME, sem permissão de launcher padrão, sem atalhos da tela inicial, sem bateria do controle (removidos a pedido do dono).
 - **Play Protect (Brasil):** apps instalados fora da loja que declaram `NotificationListenerService` ou `AccessibilityService` são bloqueados sem opção de continuar. Por isso os dois (leitor de notificações e `PortDeckGamepadService`, o Start+Select dentro dos jogos) só entram no manifest com `PORTDECK_NOTIFICATIONS=1`, no APK opcional **"Completo"**. `scripts/verify-apk.cjs` derruba o CI se o APK padrão tiver qualquer um deles. Não adicione permissões sensíveis (SMS, acessibilidade, leitor de notificações) ao APK padrão. `KILL_BACKGROUND_PROCESSES` (Fechar jogo) é permissão comum e fica nos dois.
 - **Jogo aberto no Android:** o estado vem de `portdeck-android-running-v1` (o que o PortDeck abriu), não de detecção do sistema. O Android não informa a outro app quando um jogo é fechado pelos recentes; não prometa detecção exata.
+- **Fechar jogo no Android:** app comum não encerra outro app (`killBackgroundProcesses` é ignorado pela One UI). O único caminho automático é a acessibilidade apertar "Forçar parada" (APK Completo); no APK normal, abra Informações do app. Não volte a prometer fechamento silencioso.
 - **Windows:** nada de shell; executáveis iniciados diretamente. `nodeIntegration` desligado, CSP no `index.html` (imagens: `self data: blob:`).
 - **Perfis:** a troca de usuário **não abre sozinha** ao iniciar (pedido do dono). Entrada → início direto. A tela "Alternar usuário" só abre pelo avatar, pela tecla P ou por ↑ + A.
 - **Controle primeiro:** toda tela nova precisa funcionar com controle (direcional, A, B, Start), teclado e toque. Diálogos prendem o foco; ao fechar, o foco volta para um lugar que as setas consigam usar (normalmente a capa selecionada).
@@ -62,8 +63,8 @@ Os testes de navegador usam `dist/` já compilado para o Windows: rode `npm run 
 - Workflows: `windows-build.yml` (instalador e portátil), `android-build.yml` (APK padrão + APK Completo, ambos conferidos por `verify-apk.cjs`, que lê a versão do `package.json`), `ui-check.yml` (unitários + build + Playwright).
 - O Java nativo só é compilado no CI (não há Android SDK local): depois de mexer em `android-source/`, confira o workflow Android antes de dizer que está pronto.
 
-## Estado em 1.0 (out/2026)
-Pronto: tudo da 0.9 + navegação por controle com foco visível (`pad-nav`) na central, na lista de apps e nos diálogos; central começa no primeiro cartão; selo "Em execução", Voltar ao jogo e **Fechar jogo** (Android `closeApp`/`killBackgroundProcesses`, Windows `beginClose`); Start+Select dentro dos jogos no APK Completo (`PortDeckGamepadService`, abre a central ao voltar); nome longo não estica a capa. versionCode 1000000, mesma chave. Registro: `docs/PORTDECK_1.0.md`, capturas em `docs/screenshots/1.0/`.
-Validação: 18 testes unitários e 24 de navegador (controle simulado via `navigator.getGamepads`). Java novo só compila no CI.
-Pendente no aparelho: atualizar 0.9 → 1.0 por cima, controle físico na central e na lista de apps, Fechar jogo no Minecraft, Start+Select dentro do jogo no APK Completo (ativar em Acessibilidade).
-Ideias futuras: capas automáticas por nome (exige API licenciada e confirmação do usuário); detecção real de jogo aberto via acessibilidade no Completo.
+## Estado em 1.1 (out/2026)
+Pronto: tudo da 1.0 + **Fechar jogo de verdade**: no Completo, `PortDeckGamepadService` aperta "Forçar parada" nas Configurações (lê a tela só nesse momento); no APK normal, abre Informações do app para o toque manual. Start+Select usa `MainActivity.resumed`, trata abertura a frio (`consumeHome`) e tem diagnóstico (último botão, serviço ativo) e pedido de isenção de bateria (só no Completo). versionCode 1001000. Registro: `docs/PORTDECK_1.1.md`.
+Validação: 18 unitários e 28 de navegador. A automação da One UI só se valida no tablet.
+Pendente no aparelho: Fechar jogo automático no Minecraft; Start+Select após 10–20 min com bateria sem restrição. O dono já liberou "Permitir configurações restritas" (necessário para ativar acessibilidade e notificações em app fora da loja).
+Ideias futuras: capas automáticas por nome (exige API licenciada e confirmação do usuário).

@@ -31,6 +31,8 @@ if(withNotifications&&!manifest.includes('PortDeckGamepadService')){
  '    </service>';
  manifest=manifest.replace('</application>',gamepad+'\n    </application>');
 }
+// Completo: pedir ao Android para não adormecer o PortDeck (senão o Start+Select para de responder depois de um tempo na Samsung).
+if(withNotifications&&!manifest.includes('REQUEST_IGNORE_BATTERY_OPTIMIZATIONS'))manifest=manifest.replace('<application','<uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>\n    <application');
 // "Fechar jogo": permissão comum (não sensível) para encerrar o app aberto pelo PortDeck quando ele está em segundo plano.
 if(!manifest.includes('android.permission.KILL_BACKGROUND_PROCESSES'))manifest=manifest.replace('<application','<uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES"/>\n    <application');
 fs.writeFileSync(manifestPath,manifest);

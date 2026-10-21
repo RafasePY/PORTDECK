@@ -184,7 +184,7 @@ public class PortDeckNativePlugin extends Plugin {
       getContext().startActivity(intent);call.resolve();
     }catch(Exception e){call.reject("Não foi possível abrir as configurações: "+e.getMessage());}
   }
-  // Fecha o jogo que o PortDeck abriu. Só funciona com o jogo em segundo plano (o PortDeck está na frente quando o jogador pede).
+  // Fecha o jogo que o PortDeck abriu: Forçar parada automático (APK Completo) ou a tela de Informações do app.
   @PluginMethod
   public void closeApp(PluginCall call){
     String pkg=call.getString("packageName");
@@ -192,7 +192,16 @@ public class PortDeckNativePlugin extends Plugin {
     try{
       ActivityManager am=(ActivityManager)getContext().getSystemService(Context.ACTIVITY_SERVICE);
       am.killBackgroundProcesses(pkg);
-      JSObject out=new JSObject();out.put("closed",true);call.resolve(out);
+      JSObject out=new JSObject();
+      // O Android não deixa um app comum encerrar outro. Com o serviço do APK Completo ativo, ele aperta "Forçar parada";
+      // senão abrimos Informações do app para o jogador tocar em "Forçar parada".
+      if(PortDeckGamepadService.requestClose(pkg))out.put("mode","auto");
+      else{
+        Intent info=new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,Uri.parse("package:"+pkg));
+        info.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        getContext().startActivity(info);out.put("mode","manual");
+      }
+      call.resolve(out);
     }catch(Exception e){call.reject("O Android não permitiu fechar este app: "+e.getMessage());}
   }
 }

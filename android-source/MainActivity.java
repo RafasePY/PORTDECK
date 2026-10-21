@@ -8,7 +8,12 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 import com.getcapacitor.BridgeActivity;
 public class MainActivity extends BridgeActivity {
+  // Lido pelo serviço do controle: com o PortDeck na frente, ele mesmo trata Start+Select.
+  static volatile boolean resumed;
+  // Aberto a frio por Start+Select (processo tinha sido encerrado): a interface consome isto ao carregar.
+  static volatile boolean pendingHome;
   @Override public void onCreate(Bundle state) {
+    if(getIntent() != null && getIntent().getBooleanExtra("portdeck.home", false)) pendingHome = true;
     registerPlugin(PortDeckNativePlugin.class);
     registerPlugin(PortDeckPlatformPlugin.class);
     registerPlugin(PortDeckNotificationsPlugin.class);
@@ -18,7 +23,12 @@ public class MainActivity extends BridgeActivity {
   // O Android devolve as barras ao voltar de um jogo, de um diálogo ou da tela de permissões.
   @Override public void onResume() {
     super.onResume();
+    resumed = true;
     immersive();
+  }
+  @Override public void onPause() {
+    resumed = false;
+    super.onPause();
   }
   @Override public void onWindowFocusChanged(boolean hasFocus) {
     super.onWindowFocusChanged(hasFocus);

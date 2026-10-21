@@ -7,8 +7,8 @@ function fixture(opts){
  const games=[{id:'mine',name:'Minecraft',packageName:'com.mojang.minecraftpe'},{id:'kart',name:'Mario Kart',packageName:'demo.kart'}];
  if(opts.empty)localStorage.removeItem('portdeck-android-library-v1');else if(!localStorage.getItem('portdeck-android-library-v1'))localStorage.setItem('portdeck-android-library-v1',JSON.stringify(games.map(g=>({cover:'',banner:'',logo:'',playedSeconds:0,lastPlayed:null,...g}))));
  window.calls=[];window.listeners={};
- const native={listApps:{apps:[{id:'yt',name:'YouTube',packageName:'com.google.android.youtube'},{id:'wa',name:'WhatsApp',packageName:'com.whatsapp'},{id:'gm',name:'Gmail',packageName:'com.google.android.gm'}]},launchApp:{},closeApp:{closed:true},launchOptions:{activities:[]},getStatus:{tabletBattery:64,charging:false},status:{available:true,granted:false},gamepadStatus:{available:true,enabled:false},openGamepadSettings:{}};
- window.Capacitor={PluginHeaders:[{name:'PortDeckNative',methods:['listApps','launchApp','launchOptions','closeApp','appSettings'].map(name=>({name,rtype:'promise'}))},{name:'PortDeckPlatform',methods:[{name:'getStatus',rtype:'promise'}]},{name:'PortDeckNotifications',methods:['status','gamepadStatus','openGamepadSettings','openSettings','open',{name:'addListener',rtype:'callback'}].map(m=>typeof m==='string'?{name:m,rtype:'promise'}:m)}],
+ const native={listApps:{apps:[{id:'yt',name:'YouTube',packageName:'com.google.android.youtube'},{id:'wa',name:'WhatsApp',packageName:'com.whatsapp'},{id:'gm',name:'Gmail',packageName:'com.google.android.gm'}]},launchApp:{},closeApp:opts.autoClose?{mode:'auto'}:{mode:'manual'},consumeHome:{home:!!opts.coldHome},openBatterySettings:{},launchOptions:{activities:[]},getStatus:{tabletBattery:64,charging:false},status:{available:true,granted:false},gamepadStatus:opts.gamepad||{available:true,enabled:false},openGamepadSettings:{}};
+ window.Capacitor={PluginHeaders:[{name:'PortDeckNative',methods:['listApps','launchApp','launchOptions','closeApp','appSettings'].map(name=>({name,rtype:'promise'}))},{name:'PortDeckPlatform',methods:[{name:'getStatus',rtype:'promise'}]},{name:'PortDeckNotifications',methods:['status','gamepadStatus','openGamepadSettings','openBatterySettings','consumeHome','openSettings','open',{name:'addListener',rtype:'callback'}].map(m=>typeof m==='string'?{name:m,rtype:'promise'}:m)}],
   nativePromise:async(plugin,method,options)=>{window.calls.push([plugin,method,options]);return native[method]??{};},
   nativeCallback:(plugin,method,options,cb)=>{(window.listeners[options?.eventName]||=[]).push(cb);return 'cb'+Math.random();}};
  window.padButtons=[];Object.defineProperty(navigator,'getGamepads',{value:()=>[{id:'Xbox test',connected:true,buttons:Array.from({length:17},(_,i)=>({pressed:window.padButtons.includes(i),value:window.padButtons.includes(i)?1:0})),axes:[0,0]}]});
@@ -70,4 +70,33 @@ test('a very long name does not stretch the cover and the title stops at two lin
  expect(long.width).toBeLessThan(short.width*1.4);
  const h1=page.locator('.console-story h1');const lh=await h1.evaluate(el=>parseFloat(getComputedStyle(el).lineHeight)||el.getBoundingClientRect().height);
  expect((await h1.boundingBox()).height).toBeLessThan(lh*2.6);
+});
+
+// 1.1: Fechar jogo de verdade (Forçar parada) e Start+Select confiável.
+test('1.1: Completo closes through Forçar parada and keeps "Em execução" until Android confirms',async({page})=>{
+ await page.addInitScript(fixture,{autoClose:true});await page.goto(ANDROID);await enter(page);
+ await page.getByRole('button',{name:/Jogar/}).first().click();
+ await press(page,[16]);await page.locator('[data-control-center]').getByRole('button',{name:/Fechar jogo/}).click();
+ await expect(page.locator('.ad-toast')).toContainText('Fechando Minecraft');
+ await expect(page.locator('[data-console-tile="mine"] .console-tile-running')).toBeVisible();
+ await page.evaluate(()=>window.listeners.closeResult.forEach(cb=>cb({packageName:'com.mojang.minecraftpe',ok:true})));
+ await expect(page.locator('.console-tile-running')).toHaveCount(0);await expect(page.locator('.ad-toast')).toContainText('Jogo fechado');
+});
+test('1.1: normal APK sends the player to Forçar parada and says so',async({page})=>{
+ await page.addInitScript(fixture,{});await page.goto(ANDROID);await enter(page);
+ await page.getByRole('button',{name:/Jogar/}).first().click();
+ await page.locator('[data-console-tile="mine"]').click({button:'right'});await page.getByRole('menuitem',{name:'Fechar jogo'}).click();
+ await expect(page.locator('.ad-toast')).toContainText('Forçar parada');
+});
+test('1.1: cold start from Start+Select skips the welcome and opens the control center',async({page})=>{
+ await page.addInitScript(fixture,{coldHome:true});await page.goto(ANDROID);
+ await expect(page.locator('[data-control-center]')).toBeVisible({timeout:8000});
+ await expect(page.locator('.ps-welcome')).toHaveCount(0);
+});
+test('1.1: diagnostics show the last controller button and offer the battery exemption',async({page})=>{
+ await page.addInitScript(fixture,{gamepad:{available:true,enabled:true,connected:true,lastKey:'START',lastKeyAt:Date.now()-3000,batteryFree:false}});await page.goto(ANDROID);await enter(page);
+ await page.getByRole('button',{name:'Notificações do tablet'}).click();
+ await expect(page.locator('.ad-gamepad-diag')).toContainText('Serviço ativo');await expect(page.locator('.ad-gamepad-diag')).toContainText('START');
+ await page.getByRole('button',{name:'Não deixar o Android adormecer'}).click();
+ await expect.poll(()=>page.evaluate(()=>window.calls.some(c=>c[1]==='openBatterySettings'))).toBeTruthy();
 });

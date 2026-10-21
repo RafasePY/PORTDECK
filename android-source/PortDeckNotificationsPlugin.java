@@ -4,6 +4,7 @@ import android.app.ActivityOptions;
 import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.net.Uri;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -25,6 +26,21 @@ public class PortDeckNotificationsPlugin extends Plugin {
 
   void deliver(JSObject data) { notifyListeners("notification", data); }
 
+  // Resultado do "Fechar jogo" automático (o serviço roda fora do fluxo de chamadas do plugin).
+  static void closeResult(String pkg, boolean ok) {
+    PortDeckNotificationsPlugin target = instance;
+    if(target == null) return;
+    JSObject data = new JSObject(); data.put("packageName", pkg); data.put("ok", ok);
+    target.notifyListeners("closeResult", data);
+  }
+
+  // Abertura a frio por Start + Select: a MainActivity guardou o pedido antes da interface existir.
+  @PluginMethod
+  public void consumeHome(PluginCall call) {
+    JSObject result = new JSObject(); result.put("home", MainActivity.pendingHome); MainActivity.pendingHome = false;
+    call.resolve(result);
+  }
+
   // Start + Select dentro do jogo (serviço de acessibilidade do APK Completo) reabre o PortDeck com este extra.
   @Override protected void handleOnNewIntent(Intent intent) {
     super.handleOnNewIntent(intent);
@@ -41,7 +57,31 @@ public class PortDeckNotificationsPlugin extends Plugin {
     String enabled = Settings.Secure.getString(getContext().getContentResolver(), Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
     result.put("available", available);
     result.put("enabled", available && enabled != null && enabled.toLowerCase().contains(service.flattenToString().toLowerCase()));
+    // Diagnóstico: serviço vivo agora e último botão do controle que ele recebeu (ajuda a achar quando a Samsung o adormece).
+    result.put("connected", PortDeckGamepadService.instance != null);
+    result.put("lastKey", PortDeckGamepadService.lastKey);
+    result.put("lastKeyAt", PortDeckGamepadService.lastKeyAt);
+    android.os.PowerManager power = (android.os.PowerManager) getContext().getSystemService(android.content.Context.POWER_SERVICE);
+    result.put("batteryFree", power != null && power.isIgnoringBatteryOptimizations(getContext().getPackageName()));
     call.resolve(result);
+  }
+
+  // Samsung adormece apps em segundo plano e o serviço do controle para de responder depois de um tempo.
+  @PluginMethod
+  public void openBatterySettings(PluginCall call) {
+    try {
+      Intent intent = new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:" + getContext().getPackageName()));
+      intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+      getContext().startActivity(intent);
+      call.resolve();
+    } catch(Exception error) {
+      try {
+        Intent fallback = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getContext().getPackageName()));
+        fallback.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        getContext().startActivity(fallback);
+        call.resolve();
+      } catch(Exception again) { call.reject("Não foi possível abrir as configurações de bateria."); }
+    }
   }
 
   @PluginMethod

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="portdeck_gamepad_label">PortDeck · Start + Select</string>
-    <string name="portdeck_gamepad_description">Permite que Start + Select (ou o botão Home do controle) tragam o PortDeck de volta enquanto um jogo está aberto. O PortDeck não lê o conteúdo da tela nem o que você digita.</string>
+    <string name="portdeck_gamepad_description">Start + Select (ou o botão Home do controle) trazem o PortDeck de volta com um jogo aberto, e "Fechar jogo" aperta Forçar parada nas Configurações por você. O PortDeck só lê a tela de Configurações durante o Fechar jogo; não lê jogos, mensagens nem o que você digita.</string>
 </resources>
